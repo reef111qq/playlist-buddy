@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ username }}'s Spotify Playlists</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e1e1e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #1DB954, #1ed760);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #b3b3b3;
+            margin-top: 10px;
+        }
+
+        .stats {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            font-size: 0.95rem;
+        }
+
+        .playlists-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .playlist-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .playlist-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .playlist-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background: linear-gradient(135deg, #282828, #121212);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .playlist-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .playlist-info {
+            padding: 20px;
+        }
+
+        .playlist-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #fff;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .playlist-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            color: #b3b3b3;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: rgba(29, 185, 84, 0.15);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #1DB954;
+            font-weight: 600;
+        }
+
+        .no-image {
+            background: linear-gradient(135deg, #404040, #282828);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spotify-icon {
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #b3b3b3;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .playlists-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 16px;
+            }
+
+            .playlist-info {
+                padding: 14px;
+            }
+
+            .playlist-name {
+                font-size: 0.95rem;
+            }
+
+            .playlist-meta {
+                font-size: 0.8rem;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            color: #b3b3b3;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 {{ username }}'s Playlists</h1>
+            <p class="subtitle">Your personal Spotify collection</p>
+            <div class="stats">
+                {{ total }} playlist{{ 's' if total != 1 else '' }}
+            </div>
+        </header>
+
+        {% if playlists %}
+        <div class="playlists-grid">
+            {% for playlist in playlists %}
+            <a href="{{ playlist.url }}" target="_blank" style="text-decoration: none; color: inherit;">
+                <div class="playlist-card">
+                    <div class="playlist-image">
+                        {% if playlist.image %}
+                        <img src="{{ playlist.image }}" alt="{{ playlist.name }}">
+                        {% else %}
+                        <div class="no-image">
+                            <span class="spotify-icon">🎵</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="playlist-info">
+                        <div class="playlist-name">{{ playlist.name }}</div>
+                        <div class="playlist-meta">
+                            <span>{{ playlist.tracks }} track{{ 's' if playlist.tracks != 1 else '' }}</span>
+                            {% if playlist.public %}
+                            <span class="badge">PUBLIC</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <h2>No playlists found</h2>
+            <p>Create some playlists on Spotify to see them here!</p>
+        </div>
+        {% endif %}
+
+        <footer>
+            <p>Connected to Spotify</p>
+            <a href="/logout" class="logout-btn">Disconnect</a>
+        </footer>
+    </div>
+</body>
+</html>
