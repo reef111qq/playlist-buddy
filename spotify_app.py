@@ -63,8 +63,8 @@ def get_playlists():
             'name': pl['name'],
             'url': pl['external_urls']['spotify'],
             'image': pl['images'][0]['url'] if pl['images'] else None,
-            'tracks': pl['tracks']['total'],
-            'public': pl['public']
+            'tracks': pl.get('tracks', {}).get('total', 0),
+            'public': pl.get('public', False)
         })
     
     return render_template('playlists.html', 
