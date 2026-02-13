@@ -56,6 +56,43 @@
             font-size: 0.95rem;
         }
 
+        .search-container {
+            margin-top: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 25px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            color: #fff;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1DB954;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .playlist-card.hidden {
+            display: none;
+        }
+
+        a.hidden {
+            display: none;
+        }
+
         .playlists-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -212,6 +249,9 @@
             <div class="stats">
                 {{ total }} playlist{{ 's' if total != 1 else '' }}
             </div>
+            <div class="search-container">
+                <input type="text" id="searchBox" class="search-input" placeholder="Search playlists...">
+            </div>
         </header>
 
         {% if playlists %}
@@ -254,5 +294,24 @@
             <a href="/logout" class="logout-btn">Disconnect</a>
         </footer>
     </div>
+
+    <script>
+        const searchBox = document.getElementById('searchBox');
+        const playlistCards = document.querySelectorAll('.playlist-card');
+
+        searchBox.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+
+            playlistCards.forEach(card => {
+                const playlistName = card.querySelector('.playlist-name').textContent.toLowerCase();
+                
+                if (playlistName.includes(searchTerm)) {
+                    card.parentElement.classList.remove('hidden');
+                } else {
+                    card.parentElement.classList.add('hidden');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
