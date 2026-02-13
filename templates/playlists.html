@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ username }}'s Spotify Playlists</title>
+    <title>{{ username }}'s Song Library</title>
     <style>
         * {
             margin: 0;
@@ -20,13 +20,13 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         header {
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
             padding: 40px 20px;
         }
 
@@ -46,27 +46,17 @@
             margin-top: 10px;
         }
 
-        .stats {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            backdrop-filter: blur(10px);
-            font-size: 0.95rem;
-        }
-
         .search-container {
             margin-top: 30px;
-            max-width: 500px;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
 
         .search-input {
             width: 100%;
-            padding: 15px 25px;
-            font-size: 1rem;
+            padding: 20px 30px;
+            font-size: 1.1rem;
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 30px;
@@ -85,101 +75,114 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        .playlist-card.hidden {
+        .loading {
+            text-align: center;
+            padding: 40px;
             display: none;
         }
 
-        a.hidden {
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(29, 185, 84, 0.3);
+            border-top-color: #1DB954;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .results-count {
+            text-align: center;
+            color: #b3b3b3;
+            margin: 30px 0 20px;
+            font-size: 1rem;
+        }
+
+        .songs-list {
             display: none;
         }
 
-        .playlists-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 60px;
+        .songs-list.show {
+            display: block;
         }
 
-        .playlist-card {
+        .song-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px 20px;
             background: rgba(255, 255, 255, 0.08);
             border-radius: 12px;
-            overflow: hidden;
+            margin-bottom: 12px;
             transition: all 0.3s ease;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .playlist-card:hover {
-            transform: translateY(-8px);
+        .song-item:hover {
             background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            transform: translateX(5px);
+            border-color: #1DB954;
         }
 
-        .playlist-image {
-            width: 100%;
-            aspect-ratio: 1;
+        .song-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
             object-fit: cover;
-            background: linear-gradient(135deg, #282828, #121212);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .playlist-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .song-info {
+            flex: 1;
+            min-width: 0;
         }
 
-        .playlist-info {
-            padding: 20px;
-        }
-
-        .playlist-name {
+        .song-name {
             font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #fff;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            line-height: 1.4;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
 
-        .playlist-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .song-artist {
             font-size: 0.9rem;
+            color: #b3b3b3;
+            margin-bottom: 3px;
+        }
+
+        .song-playlist {
+            font-size: 0.85rem;
+            color: #1DB954;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .song-playlist:before {
+            content: "📋";
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
             color: #b3b3b3;
         }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
-            background: rgba(29, 185, 84, 0.15);
-            border-radius: 4px;
-            font-size: 0.75rem;
-            color: #1DB954;
-            font-weight: 600;
-        }
-
-        .no-image {
-            background: linear-gradient(135deg, #404040, #282828);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .spotify-icon {
-            font-size: 3rem;
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
             opacity: 0.3;
+        }
+
+        .empty-text {
+            font-size: 1.1rem;
         }
 
         footer {
@@ -187,6 +190,7 @@
             padding: 40px 20px;
             color: #b3b3b3;
             font-size: 0.9rem;
+            margin-top: 40px;
         }
 
         .logout-btn {
@@ -210,84 +214,45 @@
                 font-size: 2rem;
             }
 
-            .playlists-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 16px;
+            .song-item {
+                gap: 15px;
+                padding: 12px 15px;
             }
 
-            .playlist-info {
-                padding: 14px;
+            .song-image {
+                width: 50px;
+                height: 50px;
             }
 
-            .playlist-name {
-                font-size: 0.95rem;
+            .song-name {
+                font-size: 1rem;
             }
-
-            .playlist-meta {
-                font-size: 0.8rem;
-            }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 100px 20px;
-            color: #b3b3b3;
-        }
-
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.3;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎵 {{ username }}'s Playlists</h1>
-            <p class="subtitle">Your personal Spotify collection</p>
-            <div class="stats">
-                {{ total }} playlist{{ 's' if total != 1 else '' }}
-            </div>
+            <h1>🎵 {{ username }}'s Songs</h1>
+            <p class="subtitle">Search your entire library</p>
             <div class="search-container">
-                <input type="text" id="searchBox" class="search-input" placeholder="Search playlists...">
+                <input type="text" id="searchBox" class="search-input" placeholder="Search for a song or artist...">
             </div>
         </header>
 
-        {% if playlists %}
-        <div class="playlists-grid">
-            {% for playlist in playlists %}
-            <a href="{{ playlist.url }}" target="_blank" style="text-decoration: none; color: inherit;">
-                <div class="playlist-card">
-                    <div class="playlist-image">
-                        {% if playlist.image %}
-                        <img src="{{ playlist.image }}" alt="{{ playlist.name }}">
-                        {% else %}
-                        <div class="no-image">
-                            <span class="spotify-icon">🎵</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="playlist-info">
-                        <div class="playlist-name">{{ playlist.name }}</div>
-                        <div class="playlist-meta">
-                            <span>{{ playlist.tracks }} track{{ 's' if playlist.tracks != 1 else '' }}</span>
-                            {% if playlist.public %}
-                            <span class="badge">PUBLIC</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </a>
-            {% endfor %}
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Searching your library...</p>
         </div>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">📭</div>
-            <h2>No playlists found</h2>
-            <p>Create some playlists on Spotify to see them here!</p>
+
+        <div class="results-count" id="resultsCount"></div>
+
+        <div class="songs-list" id="songsList"></div>
+
+        <div class="empty-state" id="emptyState">
+            <div class="empty-icon">🔍</div>
+            <p class="empty-text">Type to search for songs in your playlists</p>
         </div>
-        {% endif %}
 
         <footer>
             <p>Connected to Spotify</p>
@@ -297,21 +262,74 @@
 
     <script>
         const searchBox = document.getElementById('searchBox');
-        const playlistCards = document.querySelectorAll('.playlist-card');
+        const loading = document.getElementById('loading');
+        const songsList = document.getElementById('songsList');
+        const emptyState = document.getElementById('emptyState');
+        const resultsCount = document.getElementById('resultsCount');
+        let searchTimeout = null;
 
         searchBox.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
 
-            playlistCards.forEach(card => {
-                const playlistName = card.querySelector('.playlist-name').textContent.toLowerCase();
-                
-                if (playlistName.includes(searchTerm)) {
-                    card.parentElement.classList.remove('hidden');
-                } else {
-                    card.parentElement.classList.add('hidden');
-                }
-            });
+            if (query.length < 2) {
+                songsList.classList.remove('show');
+                emptyState.style.display = 'block';
+                resultsCount.textContent = '';
+                return;
+            }
+
+            loading.classList.add('show');
+            emptyState.style.display = 'none';
+            songsList.classList.remove('show');
+            resultsCount.textContent = '';
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/api/search-songs?q=${encodeURIComponent(query)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        loading.classList.remove('show');
+                        displayResults(data.results);
+                    })
+                    .catch(err => {
+                        loading.classList.remove('show');
+                        console.error(err);
+                    });
+            }, 500);
         });
+
+        function displayResults(songs) {
+            if (songs.length === 0) {
+                emptyState.style.display = 'block';
+                emptyState.querySelector('.empty-text').textContent = 'No songs found';
+                resultsCount.textContent = '';
+                return;
+            }
+
+            resultsCount.textContent = `Found ${songs.length} song${songs.length !== 1 ? 's' : ''}`;
+            
+            songsList.innerHTML = songs.map(song => `
+                <a href="${song.url}" target="_blank" style="text-decoration: none; color: inherit;">
+                    <div class="song-item">
+                        <img src="${song.image || ''}" alt="${escapeHtml(song.name)}" class="song-image">
+                        <div class="song-info">
+                            <div class="song-name">${escapeHtml(song.name)}</div>
+                            <div class="song-artist">${escapeHtml(song.artist)}</div>
+                            <div class="song-playlist">${escapeHtml(song.playlist)}</div>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+
+            songsList.classList.add('show');
+            emptyState.style.display = 'none';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     </script>
 </body>
 </html>
