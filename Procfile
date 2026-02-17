@@ -1,1 +1,1 @@
-web: gunicorn spotify_app:app
+web: gunicorn spotify_app:app --timeout 120
