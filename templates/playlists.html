@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ username }}'s Song Library</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -19,10 +15,7 @@
             padding: 20px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
 
         header {
             text-align: center;
@@ -46,10 +39,6 @@
             margin-top: 10px;
         }
 
-        /* ============================================
-           Library loading banner — shown while we
-           fetch the user's full library on page load
-           ============================================ */
         .library-status {
             text-align: center;
             padding: 15px;
@@ -101,14 +90,8 @@
             background: rgba(255, 255, 255, 0.15);
         }
 
-        .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .search-input:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .search-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .search-input:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .results-count {
             text-align: center;
@@ -117,13 +100,8 @@
             font-size: 1rem;
         }
 
-        .songs-list {
-            display: none;
-        }
-
-        .songs-list.show {
-            display: block;
-        }
+        .songs-list { display: none; }
+        .songs-list.show { display: block; }
 
         .song-item {
             display: flex;
@@ -151,43 +129,10 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        .song-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .song-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .song-artist {
-            font-size: 0.9rem;
-            color: #b3b3b3;
-            margin-bottom: 3px;
-        }
-
-        .song-album {
-            font-size: 0.85rem;
-            color: #888;
-            margin-bottom: 5px;
-        }
-
-        .song-playlists {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .playlist-tag {
-            font-size: 0.75rem;
-            color: #1DB954;
-            background: rgba(29, 185, 84, 0.15);
-            padding: 2px 8px;
-            border-radius: 10px;
-            border: 1px solid rgba(29, 185, 84, 0.3);
-        }
+        .song-info { flex: 1; min-width: 0; }
+        .song-name { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; }
+        .song-artist { font-size: 0.9rem; color: #b3b3b3; margin-bottom: 3px; }
+        .song-album { font-size: 0.85rem; color: #888; }
 
         .empty-state {
             text-align: center;
@@ -195,15 +140,8 @@
             color: #b3b3b3;
         }
 
-        .empty-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        .empty-text {
-            font-size: 1.1rem;
-        }
+        .empty-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.3; }
+        .empty-text { font-size: 1.1rem; }
 
         footer {
             text-align: center;
@@ -225,28 +163,13 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        .logout-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-
-            .song-item {
-                gap: 15px;
-                padding: 12px 15px;
-            }
-
-            .song-image {
-                width: 50px;
-                height: 50px;
-            }
-
-            .song-name {
-                font-size: 1rem;
-            }
+            h1 { font-size: 2rem; }
+            .song-item { gap: 15px; padding: 12px 15px; }
+            .song-image { width: 50px; height: 50px; }
+            .song-name { font-size: 1rem; }
         }
     </style>
 </head>
@@ -254,27 +177,24 @@
     <div class="container">
         <header>
             <h1>🎵 {{ username }}'s Songs</h1>
-            <p class="subtitle">Search your entire library</p>
+            <p class="subtitle">Search your liked songs</p>
 
-            <!-- Status banner: tells the user their library is loading -->
             <div class="library-status loading" id="libraryStatus">
-                ⏳ Loading your library... This may take a moment the first time.
+                ⏳ Loading your liked songs... This may take a moment.
             </div>
 
             <div class="search-container">
-                <!-- Search is DISABLED until the library is cached -->
                 <input type="text" id="searchBox" class="search-input"
                        placeholder="Search for a song or artist..." disabled>
             </div>
         </header>
 
         <div class="results-count" id="resultsCount"></div>
-
         <div class="songs-list" id="songsList"></div>
 
         <div class="empty-state" id="emptyState">
             <div class="empty-icon">🔍</div>
-            <p class="empty-text">Type to search for songs in your playlists</p>
+            <p class="empty-text">Type to search your liked songs</p>
         </div>
 
         <footer>
@@ -291,36 +211,26 @@
         const libraryStatus = document.getElementById('libraryStatus');
         let searchTimeout = null;
 
-        // ============================================================
-        // BUG FIX #2: Load the library ONCE on page load.
-        //
-        // Instead of fetching all playlists + tracks on every keystroke,
-        // we call /api/load-library once. The backend caches the result
-        // in the session, so subsequent searches just filter cached data.
-        // ============================================================
+        // Load library once on page load
         window.addEventListener('DOMContentLoaded', () => {
             fetch('/api/load-library')
                 .then(r => {
                     if (r.status === 401) {
-                        // Token expired — redirect to re-authenticate
                         window.location.href = '/';
                         return;
+                    }
+                    if (!r.ok) {
+                        throw new Error('Server returned ' + r.status);
                     }
                     return r.json();
                 })
                 .then(data => {
                     if (!data) return;
-
-                    // Library is ready — enable the search bar
                     libraryStatus.className = 'library-status ready';
-                    libraryStatus.textContent = `✅ Library loaded — ${data.total} songs ready to search`;
+                    libraryStatus.textContent = '✅ Library loaded — ' + data.total + ' songs ready to search';
                     searchBox.disabled = false;
                     searchBox.focus();
-
-                    // Auto-hide the status after 3 seconds
-                    setTimeout(() => {
-                        libraryStatus.style.display = 'none';
-                    }, 3000);
+                    setTimeout(() => { libraryStatus.style.display = 'none'; }, 3000);
                 })
                 .catch(err => {
                     console.error('Failed to load library:', err);
@@ -329,9 +239,7 @@
                 });
         });
 
-        // ============================================================
-        // Search handler — now searches cached data (instant response)
-        // ============================================================
+        // Search with debounce
         searchBox.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             const query = e.target.value.trim();
@@ -339,7 +247,7 @@
             if (query.length < 2) {
                 songsList.classList.remove('show');
                 emptyState.style.display = 'block';
-                emptyState.querySelector('.empty-text').textContent = 'Type to search for songs in your playlists';
+                emptyState.querySelector('.empty-text').textContent = 'Type to search your liked songs';
                 resultsCount.textContent = '';
                 return;
             }
@@ -348,26 +256,18 @@
             songsList.classList.remove('show');
             resultsCount.textContent = '';
 
-            // Debounce: wait 300ms after the user stops typing before searching.
-            // (Debounce = "don't do the thing until the user pauses for a moment."
-            //  This prevents firing a request on every single keystroke.)
             searchTimeout = setTimeout(() => {
-                fetch(`/api/search-songs?q=${encodeURIComponent(query)}`)
+                fetch('/api/search-songs?q=' + encodeURIComponent(query))
                     .then(r => {
-                        if (r.status === 401) {
-                            window.location.href = '/';
-                            return;
-                        }
+                        if (r.status === 401) { window.location.href = '/'; return; }
                         return r.json();
                     })
                     .then(data => {
                         if (!data) return;
                         displayResults(data.results);
                     })
-                    .catch(err => {
-                        console.error('Search error:', err);
-                    });
-            }, 300);  // Reduced from 500ms since cached search is fast
+                    .catch(err => { console.error('Search error:', err); });
+            }, 300);
         });
 
         function displayResults(songs) {
@@ -380,24 +280,20 @@
             }
 
             const cappedNote = songs.length >= 200 ? ' (showing first 200)' : '';
-            resultsCount.textContent = `Found ${songs.length} song${songs.length !== 1 ? 's' : ''}${cappedNote}`;
+            resultsCount.textContent = 'Found ' + songs.length + ' song' + (songs.length !== 1 ? 's' : '') + cappedNote;
 
-            songsList.innerHTML = songs.map(song => `
-                <a href="${song.url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
-                    <div class="song-item">
-                        <img src="${song.image || ''}" alt="${escapeHtml(song.name)}" class="song-image"
-                             onerror="this.style.display='none'">
-                        <div class="song-info">
-                            <div class="song-name">${escapeHtml(song.name)}</div>
-                            <div class="song-artist">${escapeHtml(song.artist)}</div>
-                            <div class="song-album">${escapeHtml(song.album)}</div>
-                            <div class="song-playlists">
-                                ${song.playlists.map(p => `<span class="playlist-tag">${escapeHtml(p)}</span>`).join('')}
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            `).join('');
+            songsList.innerHTML = songs.map(song =>
+                '<a href="' + song.url + '" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">' +
+                    '<div class="song-item">' +
+                        '<img src="' + (song.image || '') + '" alt="' + escapeHtml(song.name) + '" class="song-image" onerror="this.style.display=\'none\'">' +
+                        '<div class="song-info">' +
+                            '<div class="song-name">' + escapeHtml(song.name) + '</div>' +
+                            '<div class="song-artist">' + escapeHtml(song.artist) + '</div>' +
+                            '<div class="song-album">' + escapeHtml(song.album) + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</a>'
+            ).join('');
 
             songsList.classList.add('show');
             emptyState.style.display = 'none';
