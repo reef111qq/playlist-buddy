@@ -46,6 +46,36 @@
             margin-top: 10px;
         }
 
+        /* ============================================
+           Library loading banner — shown while we
+           fetch the user's full library on page load
+           ============================================ */
+        .library-status {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+        }
+
+        .library-status.loading {
+            background: rgba(29, 185, 84, 0.15);
+            border: 1px solid rgba(29, 185, 84, 0.3);
+            color: #1ed760;
+        }
+
+        .library-status.ready {
+            background: rgba(29, 185, 84, 0.1);
+            border: 1px solid rgba(29, 185, 84, 0.2);
+            color: #1DB954;
+        }
+
+        .library-status.error {
+            background: rgba(255, 80, 80, 0.15);
+            border: 1px solid rgba(255, 80, 80, 0.3);
+            color: #ff5050;
+        }
+
         .search-container {
             margin-top: 30px;
             max-width: 600px;
@@ -75,28 +105,9 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            display: none;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(29, 185, 84, 0.3);
-            border-top-color: #1DB954;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .search-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .results-count {
@@ -157,16 +168,25 @@
             margin-bottom: 3px;
         }
 
-        .song-playlist {
+        .song-album {
             font-size: 0.85rem;
-            color: #1DB954;
-            display: inline-flex;
-            align-items: center;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .song-playlists {
+            display: flex;
+            flex-wrap: wrap;
             gap: 5px;
         }
 
-        .song-playlist:before {
-            content: "📋";
+        .playlist-tag {
+            font-size: 0.75rem;
+            color: #1DB954;
+            background: rgba(29, 185, 84, 0.15);
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(29, 185, 84, 0.3);
         }
 
         .empty-state {
@@ -235,15 +255,18 @@
         <header>
             <h1>🎵 {{ username }}'s Songs</h1>
             <p class="subtitle">Search your entire library</p>
+
+            <!-- Status banner: tells the user their library is loading -->
+            <div class="library-status loading" id="libraryStatus">
+                ⏳ Loading your library... This may take a moment the first time.
+            </div>
+
             <div class="search-container">
-                <input type="text" id="searchBox" class="search-input" placeholder="Search for a song or artist...">
+                <!-- Search is DISABLED until the library is cached -->
+                <input type="text" id="searchBox" class="search-input"
+                       placeholder="Search for a song or artist..." disabled>
             </div>
         </header>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Searching your library...</p>
-        </div>
 
         <div class="results-count" id="resultsCount"></div>
 
@@ -262,12 +285,53 @@
 
     <script>
         const searchBox = document.getElementById('searchBox');
-        const loading = document.getElementById('loading');
         const songsList = document.getElementById('songsList');
         const emptyState = document.getElementById('emptyState');
         const resultsCount = document.getElementById('resultsCount');
+        const libraryStatus = document.getElementById('libraryStatus');
         let searchTimeout = null;
 
+        // ============================================================
+        // BUG FIX #2: Load the library ONCE on page load.
+        //
+        // Instead of fetching all playlists + tracks on every keystroke,
+        // we call /api/load-library once. The backend caches the result
+        // in the session, so subsequent searches just filter cached data.
+        // ============================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/load-library')
+                .then(r => {
+                    if (r.status === 401) {
+                        // Token expired — redirect to re-authenticate
+                        window.location.href = '/';
+                        return;
+                    }
+                    return r.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    // Library is ready — enable the search bar
+                    libraryStatus.className = 'library-status ready';
+                    libraryStatus.textContent = `✅ Library loaded — ${data.total} songs ready to search`;
+                    searchBox.disabled = false;
+                    searchBox.focus();
+
+                    // Auto-hide the status after 3 seconds
+                    setTimeout(() => {
+                        libraryStatus.style.display = 'none';
+                    }, 3000);
+                })
+                .catch(err => {
+                    console.error('Failed to load library:', err);
+                    libraryStatus.className = 'library-status error';
+                    libraryStatus.textContent = '❌ Failed to load library. Try refreshing the page.';
+                });
+        });
+
+        // ============================================================
+        // Search handler — now searches cached data (instant response)
+        // ============================================================
         searchBox.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             const query = e.target.value.trim();
@@ -275,47 +339,61 @@
             if (query.length < 2) {
                 songsList.classList.remove('show');
                 emptyState.style.display = 'block';
+                emptyState.querySelector('.empty-text').textContent = 'Type to search for songs in your playlists';
                 resultsCount.textContent = '';
                 return;
             }
 
-            loading.classList.add('show');
             emptyState.style.display = 'none';
             songsList.classList.remove('show');
             resultsCount.textContent = '';
 
+            // Debounce: wait 300ms after the user stops typing before searching.
+            // (Debounce = "don't do the thing until the user pauses for a moment."
+            //  This prevents firing a request on every single keystroke.)
             searchTimeout = setTimeout(() => {
                 fetch(`/api/search-songs?q=${encodeURIComponent(query)}`)
-                    .then(r => r.json())
+                    .then(r => {
+                        if (r.status === 401) {
+                            window.location.href = '/';
+                            return;
+                        }
+                        return r.json();
+                    })
                     .then(data => {
-                        loading.classList.remove('show');
+                        if (!data) return;
                         displayResults(data.results);
                     })
                     .catch(err => {
-                        loading.classList.remove('show');
-                        console.error(err);
+                        console.error('Search error:', err);
                     });
-            }, 500);
+            }, 300);  // Reduced from 500ms since cached search is fast
         });
 
         function displayResults(songs) {
             if (songs.length === 0) {
                 emptyState.style.display = 'block';
                 emptyState.querySelector('.empty-text').textContent = 'No songs found';
+                songsList.classList.remove('show');
                 resultsCount.textContent = '';
                 return;
             }
 
-            resultsCount.textContent = `Found ${songs.length} song${songs.length !== 1 ? 's' : ''}`;
-            
+            const cappedNote = songs.length >= 200 ? ' (showing first 200)' : '';
+            resultsCount.textContent = `Found ${songs.length} song${songs.length !== 1 ? 's' : ''}${cappedNote}`;
+
             songsList.innerHTML = songs.map(song => `
-                <a href="${song.url}" target="_blank" style="text-decoration: none; color: inherit;">
+                <a href="${song.url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
                     <div class="song-item">
-                        <img src="${song.image || ''}" alt="${escapeHtml(song.name)}" class="song-image">
+                        <img src="${song.image || ''}" alt="${escapeHtml(song.name)}" class="song-image"
+                             onerror="this.style.display='none'">
                         <div class="song-info">
                             <div class="song-name">${escapeHtml(song.name)}</div>
                             <div class="song-artist">${escapeHtml(song.artist)}</div>
-                            <div class="song-playlist">${escapeHtml(song.playlist)}</div>
+                            <div class="song-album">${escapeHtml(song.album)}</div>
+                            <div class="song-playlists">
+                                ${song.playlists.map(p => `<span class="playlist-tag">${escapeHtml(p)}</span>`).join('')}
+                            </div>
                         </div>
                     </div>
                 </a>
