@@ -291,7 +291,7 @@
 
         /* === DEMO CONVERSATION === */
         .demo-section {
-            max-width: 900px;
+            max-width: 960px;
             margin: 0 auto;
             padding: 40px 24px 80px;
         }
@@ -309,6 +309,12 @@
             font-size: 0.95rem;
             color: var(--text-dim);
             margin-bottom: 40px;
+        }
+
+        .demos-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
         .demo-phone {
@@ -338,9 +344,10 @@
         }
 
         .demo-header-text {
-            font-family: 'Syne', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
             color: var(--text-dim);
         }
 
@@ -496,9 +503,10 @@
         @media (max-width: 700px) {
             .comparison { grid-template-columns: 1fr; }
             .steps { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+            .demos-row { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
             nav { padding: 16px 20px; }
             .hero { padding: 50px 20px 40px; }
-            .demo-phone { margin: 0 -4px; border-radius: 20px; }
+            .demo-phone { border-radius: 20px; }
         }
 
         /* === SCROLL ANIMATIONS === */
@@ -586,62 +594,87 @@
             </div>
         </section>
 
-        <!-- DEMO CONVERSATION -->
+        <!-- DEMO CONVERSATIONS -->
         <section class="demo-section fade-in">
             <h2>See it in action</h2>
-            <p class="demo-subtitle">A real conversation with Playlist Buddy</p>
+            <p class="demo-subtitle">Two real examples of Playlist Buddy crafting prompts</p>
 
-            <div class="demo-phone">
-                <div class="demo-header">
-                    <div class="demo-header-dot"></div>
-                    <span class="demo-header-text">Playlist Buddy</span>
-                </div>
-                <div class="demo-messages" id="demoMessages">
+            <div class="demos-row">
 
-                    <div class="demo-msg ai" data-delay="400">
-                        <div class="demo-avatar">🎵</div>
-                        <div class="demo-bubble">Hey there! I can see you've got great taste — lots of Drake and J. Cole in your library! What kind of playlist are you thinking about?</div>
+                <!-- Demo 1: Hip-Hop -->
+                <div class="demo-phone">
+                    <div class="demo-header">
+                        <div class="demo-header-dot"></div>
+                        <span class="demo-header-text">Hip-Hop · Boom Bap</span>
                     </div>
-
-                    <div class="demo-msg user" data-delay="1200">
-                        <div class="demo-avatar">👤</div>
-                        <div class="demo-bubble">I want a boom-bap sounding playlist with 90's sounding drums and smooth vocals. The songs don't need to be from the 90's, but need to give that vibe</div>
-                    </div>
-
-                    <div class="demo-msg ai" data-delay="2200">
-                        <div class="demo-avatar">🎵</div>
-                        <div class="demo-bubble">That sounds awesome! Since you have a lot of hip-hop in your library, we can definitely pull from the artists you love. Do you want mostly familiar tracks, or are you open to discovering some new artists that fit that boom-bap vibe?</div>
-                    </div>
-
-                    <div class="demo-msg user" data-delay="3200">
-                        <div class="demo-avatar">👤</div>
-                        <div class="demo-bubble">Mostly familiar tracks</div>
-                    </div>
-
-                    <div class="demo-msg ai" data-delay="4000">
-                        <div class="demo-avatar">🎵</div>
-                        <div class="demo-bubble">Great! Any specific songs or artists you'd like to make sure are included?</div>
-                    </div>
-
-                    <div class="demo-msg user" data-delay="4800">
-                        <div class="demo-avatar">👤</div>
-                        <div class="demo-bubble">I really love Ready or Not by Fugees. Songs like that please</div>
-                    </div>
-
-                    <div class="demo-msg ai" data-delay="5800">
-                        <div class="demo-avatar">🎵</div>
-                        <div class="demo-bubble">
-                            Here's your playlist prompt — ready to paste into Spotify:
-                            <div class="demo-prompt-card">
-                                <div class="demo-prompt-label">✨ Your Playlist Prompt</div>
-                                <div class="demo-prompt-text">A boom-bap playlist with 90s-style drums, jazzy samples, and smooth soulful vocals. Think Fugees "Ready or Not" energy — laid-back grooves with lyrical depth. Feature artists like J. Cole, A$AP Rocky, Joey Bada$$, and Nas, with neo-soul undertones and head-nodding beats. Keep it mostly familiar tracks with that golden-era hip-hop feel, even if the songs are modern.</div>
-                                <div class="demo-copy-btn">📋 Copy prompt</div>
+                    <div class="demo-messages" id="demo1">
+                        <div class="demo-msg ai" data-delay="300">
+                            <div class="demo-avatar">🎵</div>
+                            <div class="demo-bubble">Hey! I see lots of Drake and J. Cole in your library. What kind of playlist are you thinking about?</div>
+                        </div>
+                        <div class="demo-msg user" data-delay="1000">
+                            <div class="demo-avatar">👤</div>
+                            <div class="demo-bubble">Boom-bap with 90's sounding drums and smooth vocals. Doesn't need to be from the 90's though</div>
+                        </div>
+                        <div class="demo-msg ai" data-delay="1800">
+                            <div class="demo-avatar">🎵</div>
+                            <div class="demo-bubble">Great taste! Want mostly familiar tracks or open to discovery?</div>
+                        </div>
+                        <div class="demo-msg user" data-delay="2500">
+                            <div class="demo-avatar">👤</div>
+                            <div class="demo-bubble">Mostly familiar. And I love Ready or Not by Fugees — songs like that</div>
+                        </div>
+                        <div class="demo-msg ai" data-delay="3400">
+                            <div class="demo-avatar">🎵</div>
+                            <div class="demo-bubble">
+                                Here's your prompt:
+                                <div class="demo-prompt-card">
+                                    <div class="demo-prompt-label">✨ Your Playlist Prompt</div>
+                                    <div class="demo-prompt-text">A boom-bap playlist with 90s-style drums, jazzy samples, and smooth soulful vocals. Think Fugees "Ready or Not" energy — laid-back grooves with lyrical depth. Feature J. Cole, A$AP Rocky, Joey Bada$$, and Nas, with neo-soul undertones. Keep it mostly familiar with that golden-era feel, even if the songs are modern.</div>
+                                    <div class="demo-copy-btn">📋 Copy prompt</div>
+                                </div>
                             </div>
-                            Want me to tweak anything?
                         </div>
                     </div>
-
                 </div>
+
+                <!-- Demo 2: Classic Rock / 80s -->
+                <div class="demo-phone">
+                    <div class="demo-header">
+                        <div class="demo-header-dot"></div>
+                        <span class="demo-header-text">Classic Rock · 80s</span>
+                    </div>
+                    <div class="demo-messages" id="demo2">
+                        <div class="demo-msg ai" data-delay="500">
+                            <div class="demo-avatar">🎵</div>
+                            <div class="demo-bubble">Hey! I can see you've got a lot of Fleetwood Mac and Bon Jovi in your library. What are we building today?</div>
+                        </div>
+                        <div class="demo-msg user" data-delay="1200">
+                            <div class="demo-avatar">👤</div>
+                            <div class="demo-bubble">Something for a road trip. Classic rock, 80s arena feel, windows down energy</div>
+                        </div>
+                        <div class="demo-msg ai" data-delay="2000">
+                            <div class="demo-avatar">🎵</div>
+                            <div class="demo-bubble">Love it! Should it build in energy or stay high the whole time? Any must-include tracks?</div>
+                        </div>
+                        <div class="demo-msg user" data-delay="2800">
+                            <div class="demo-avatar">👤</div>
+                            <div class="demo-bubble">Build up gradually. Definitely include Don't Stop Believin' and Pour Some Sugar on Me</div>
+                        </div>
+                        <div class="demo-msg ai" data-delay="3700">
+                            <div class="demo-avatar">🎵</div>
+                            <div class="demo-bubble">
+                                Here's your prompt:
+                                <div class="demo-prompt-card">
+                                    <div class="demo-prompt-label">✨ Your Playlist Prompt</div>
+                                    <div class="demo-prompt-text">An 80s classic rock road trip playlist that builds from cruising to full-throttle sing-along. Start with mid-tempo tracks like Tom Petty and Fleetwood Mac, then ramp into arena anthems — Bon Jovi, Def Leppard "Pour Some Sugar on Me," Journey "Don't Stop Believin'." Big guitars, soaring choruses, windows-down energy. Keep it all familiar hits.</div>
+                                    <div class="demo-copy-btn">📋 Copy prompt</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -681,20 +714,23 @@
 
         // === Demo conversation auto-play ===
         const demoSection = document.querySelector('.demo-section');
-        const demoMessages = document.querySelectorAll('.demo-msg');
         let demoStarted = false;
 
         const demoObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !demoStarted) {
                     demoStarted = true;
-                    demoMessages.forEach((msg) => {
-                        const delay = parseInt(msg.dataset.delay) || 0;
-                        setTimeout(() => {
-                            msg.classList.add('visible');
-                            const container = document.getElementById('demoMessages');
-                            container.scrollTop = container.scrollHeight;
-                        }, delay);
+                    ['demo1', 'demo2'].forEach(id => {
+                        const container = document.getElementById(id);
+                        if (!container) return;
+                        const msgs = container.querySelectorAll('.demo-msg');
+                        msgs.forEach((msg) => {
+                            const delay = parseInt(msg.dataset.delay) || 0;
+                            setTimeout(() => {
+                                msg.classList.add('visible');
+                                container.scrollTop = container.scrollHeight;
+                            }, delay);
+                        });
                     });
                     demoObserver.unobserve(entry.target);
                 }
