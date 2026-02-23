@@ -764,6 +764,172 @@
             text-align: center;
         }
 
+        /* ============ HOW TO USE MODAL ============ */
+        .how-to-btn {
+            background: var(--green-dim);
+            color: var(--green);
+            border-color: rgba(29,185,84,0.2);
+        }
+        .how-to-btn:hover {
+            background: rgba(29,185,84,0.2);
+            color: var(--green-glow);
+            border-color: rgba(29,185,84,0.3);
+        }
+
+        .howto-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+        .howto-overlay.open {
+            display: flex;
+        }
+
+        .howto-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+            animation: panelIn 0.3s ease-out;
+        }
+
+        @keyframes panelIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .howto-panel::-webkit-scrollbar { width: 5px; }
+        .howto-panel::-webkit-scrollbar-track { background: transparent; }
+        .howto-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+        .howto-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 28px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg-surface);
+            border-radius: 20px 20px 0 0;
+            z-index: 1;
+        }
+
+        .howto-top h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+
+        .howto-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: none;
+            color: var(--text-dim);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .howto-close:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text);
+        }
+
+        .howto-content {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .howto-block {
+            display: flex;
+            gap: 16px;
+        }
+
+        .howto-num {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--green), rgba(29,185,84,0.2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            flex-shrink: 0;
+            width: 28px;
+            padding-top: 2px;
+        }
+
+        .howto-block h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .howto-block p {
+            font-size: 0.84rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        .howto-spotify-steps {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .spotify-step {
+            display: flex;
+            gap: 8px;
+            font-size: 0.84rem;
+            color: var(--text-dim);
+            line-height: 1.55;
+        }
+
+        .spotify-step-num {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--green);
+            flex-shrink: 0;
+            padding-top: 2px;
+        }
+
+        .howto-note {
+            font-size: 0.82rem;
+            line-height: 1.55;
+            color: var(--text-dim);
+            background: rgba(255,200,50,0.06);
+            border: 1px solid rgba(255,200,50,0.15);
+            border-radius: 12px;
+            padding: 16px 20px;
+        }
+
+        .howto-note strong {
+            color: #fbbf24;
+        }
+
         /* ============ RESPONSIVE ============ */
         @media (max-width: 700px) {
             .steps-row { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; }
@@ -793,6 +959,87 @@
                 <span>{{ username }}</span>
             </div>
             <a href="/logout" class="header-btn">Disconnect</a>
+            <button class="header-btn how-to-btn" onclick="toggleHowTo()">How to Use</button>
+        </div>
+    </div>
+
+    <!-- HOW TO USE MODAL -->
+    <div class="howto-overlay" id="howtoOverlay" onclick="closeHowToOutside(event)">
+        <div class="howto-panel">
+            <div class="howto-top">
+                <h2>How to Use Playlist Buddy</h2>
+                <button class="howto-close" onclick="toggleHowTo()">✕</button>
+            </div>
+
+            <div class="howto-content">
+
+                <div class="howto-block">
+                    <div class="howto-num">1</div>
+                    <div>
+                        <h3>Chat with the AI about your playlist idea</h3>
+                        <p>Type what kind of playlist you want in the chat box below. Be as vague or specific as you like — "something for a road trip," "sad songs for a rainy day," or "90s hip-hop with jazzy beats." The AI already has access to your Spotify library, so it knows your taste.</p>
+                    </div>
+                </div>
+
+                <div class="howto-block">
+                    <div class="howto-num">2</div>
+                    <div>
+                        <h3>Answer a few quick questions</h3>
+                        <p>The AI will ask 2-3 follow-up questions to dial in the details — things like energy level, mood, whether you want familiar songs or new discoveries. Just answer naturally, like you're texting a friend who knows music.</p>
+                    </div>
+                </div>
+
+                <div class="howto-block">
+                    <div class="howto-num">3</div>
+                    <div>
+                        <h3>Copy your generated prompt</h3>
+                        <p>Once the AI has enough info, it'll create a detailed prompt in a green card with a <strong>Copy</strong> button. Click it — the prompt is now on your clipboard, ready to paste.</p>
+                    </div>
+                </div>
+
+                <div class="howto-block">
+                    <div class="howto-num">4</div>
+                    <div>
+                        <h3>Paste it into Spotify's AI Playlist feature</h3>
+                        <p>Here's where to find it in Spotify:</p>
+                        <div class="howto-spotify-steps">
+                            <div class="spotify-step">
+                                <span class="spotify-step-num">a.</span>
+                                <span>Make sure you have the <strong>latest version</strong> of Spotify installed. Update it in the App Store (iPhone) or Google Play Store (Android). The feature may not appear on older versions.</span>
+                            </div>
+                            <div class="spotify-step">
+                                <span class="spotify-step-num">b.</span>
+                                <span>Open Spotify and tap <strong>"Your Library"</strong> (bottom right).</span>
+                            </div>
+                            <div class="spotify-step">
+                                <span class="spotify-step-num">c.</span>
+                                <span>Tap the <strong>"+"</strong> button at the top to create a new playlist.</span>
+                            </div>
+                            <div class="spotify-step">
+                                <span class="spotify-step-num">d.</span>
+                                <span>Select <strong>"AI Playlist"</strong> (may also appear as "Create with AI" or "Prompted Playlist" depending on your version).</span>
+                            </div>
+                            <div class="spotify-step">
+                                <span class="spotify-step-num">e.</span>
+                                <span><strong>Paste your prompt</strong> into the text box and hit create. Spotify will generate a playlist tailored to exactly what you described.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="howto-block">
+                    <div class="howto-num">5</div>
+                    <div>
+                        <h3>Tweak if needed</h3>
+                        <p>Not quite right? Come back to the chat and ask the AI to adjust — "make it more upbeat," "add some 2000s tracks," "remove the R&B." It'll generate an updated prompt you can copy and try again.</p>
+                    </div>
+                </div>
+
+                <div class="howto-note">
+                    <strong>⚠️ Important:</strong> Spotify's AI Playlist feature requires the latest Spotify app update. If you don't see the option, update your app and try again. The feature is currently available on mobile (iOS and Android) and may be rolling out to desktop.
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -1271,6 +1518,28 @@
         function escapeForAttr(text) {
             return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
         }
+
+        // ============ How to Use modal ============
+        function toggleHowTo() {
+            const overlay = document.getElementById('howtoOverlay');
+            overlay.classList.toggle('open');
+        }
+
+        function closeHowToOutside(e) {
+            if (e.target === e.currentTarget) {
+                toggleHowTo();
+            }
+        }
+
+        // Close with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const overlay = document.getElementById('howtoOverlay');
+                if (overlay.classList.contains('open')) {
+                    toggleHowTo();
+                }
+            }
+        });
     </script>
 </body>
 </html>
