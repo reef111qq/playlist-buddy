@@ -5,234 +5,703 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Playlist Buddy — Craft Perfect Spotify AI Prompts</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --green: #1DB954;
             --green-glow: #1ed760;
+            --green-dim: rgba(29,185,84,0.1);
             --bg-deep: #0a0a0f;
+            --bg-surface: #111117;
             --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.07);
             --text: #e8e6e3;
             --text-dim: #8a8680;
+            --text-muted: #5a5854;
             --radius: 16px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Syne', sans-serif;
+            font-family: 'DM Sans', sans-serif;
             background: var(--bg-deep);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Gradient orb background */
-        body::before {
-            content: '';
+        /* === AMBIENT BACKGROUND === */
+        .bg-orb {
             position: fixed;
-            top: -30%;
-            left: -20%;
-            width: 70vw;
-            height: 70vw;
-            background: radial-gradient(circle, rgba(29,185,84,0.12) 0%, transparent 70%);
+            border-radius: 50%;
             pointer-events: none;
             z-index: 0;
+            filter: blur(80px);
         }
-        body::after {
-            content: '';
-            position: fixed;
-            bottom: -40%;
-            right: -20%;
-            width: 60vw;
-            height: 60vw;
-            background: radial-gradient(circle, rgba(29,100,185,0.08) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
+        .bg-orb.one {
+            top: -20%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: rgba(29,185,84,0.08);
+        }
+        .bg-orb.two {
+            bottom: -30%;
+            right: -15%;
+            width: 45vw;
+            height: 45vw;
+            background: rgba(29,80,200,0.06);
         }
 
         .page {
             position: relative;
             z-index: 1;
+        }
+
+        /* === NAV === */
+        nav {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 40px 24px;
+            justify-content: space-between;
+            padding: 20px 32px;
+            max-width: 1100px;
+            margin: 0 auto;
         }
 
-        .hero {
-            text-align: center;
-            max-width: 640px;
-        }
-
-        .badge {
-            display: inline-block;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.75rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--green);
-            border: 1px solid rgba(29,185,84,0.3);
-            padding: 6px 16px;
-            border-radius: 100px;
-            margin-bottom: 32px;
-            background: rgba(29,185,84,0.06);
-        }
-
-        h1 {
-            font-size: clamp(2.4rem, 6vw, 4rem);
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
             font-weight: 800;
-            line-height: 1.08;
-            letter-spacing: -0.03em;
-            margin-bottom: 24px;
-        }
-
-        h1 .accent {
+            font-size: 1.15rem;
             background: linear-gradient(135deg, var(--green), #17d9a0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .tagline {
-            font-size: 1.15rem;
-            color: var(--text-dim);
-            line-height: 1.6;
-            margin-bottom: 48px;
-            max-width: 480px;
-            margin-left: auto;
-            margin-right: auto;
+        .nav-cta {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #000;
+            background: var(--green);
+            padding: 10px 24px;
+            border-radius: 100px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .nav-cta:hover { background: var(--green-glow); transform: translateY(-1px); }
+
+        /* === HERO === */
+        .hero {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 80px 24px 60px;
         }
 
-        .connect-btn {
+        .hero-badge {
+            display: inline-block;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--green);
+            border: 1px solid rgba(29,185,84,0.3);
+            padding: 6px 18px;
+            border-radius: 100px;
+            margin-bottom: 28px;
+            background: rgba(29,185,84,0.06);
+        }
+
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 .accent {
+            background: linear-gradient(135deg, var(--green), #17d9a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            line-height: 1.65;
+            max-width: 520px;
+            margin: 0 auto 40px;
+        }
+
+        .hero-cta {
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            padding: 18px 40px;
+            padding: 18px 44px;
             background: var(--green);
             color: #000;
             font-family: 'Syne', sans-serif;
             font-size: 1.05rem;
             font-weight: 700;
-            border: none;
             border-radius: 100px;
-            cursor: pointer;
             text-decoration: none;
             transition: all 0.25s ease;
-            box-shadow: 0 0 40px rgba(29,185,84,0.25);
+            box-shadow: 0 0 50px rgba(29,185,84,0.2);
         }
-        .connect-btn:hover {
+        .hero-cta:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 60px rgba(29,185,84,0.35);
+            box-shadow: 0 0 70px rgba(29,185,84,0.3);
             background: var(--green-glow);
         }
-        .connect-btn svg {
-            width: 22px;
-            height: 22px;
+        .hero-cta svg { width: 22px; height: 22px; }
+
+        /* === PROBLEM / SOLUTION === */
+        .problem-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px 80px;
         }
 
-        /* How it works */
+        .section-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .section-label.problem { color: #ff6b6b; }
+        .section-label.solution { color: var(--green); }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .comparison-card {
+            border-radius: var(--radius);
+            padding: 32px 28px;
+            border: 1px solid var(--border);
+        }
+
+        .comparison-card.bad {
+            background: rgba(255,80,80,0.04);
+            border-color: rgba(255,80,80,0.15);
+        }
+
+        .comparison-card.good {
+            background: rgba(29,185,84,0.04);
+            border-color: rgba(29,185,84,0.15);
+        }
+
+        .comparison-card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .comparison-card.bad h3 { color: #ff6b6b; }
+        .comparison-card.good h3 { color: var(--green); }
+
+        .comparison-card p {
+            font-size: 0.92rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .prompt-example {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            padding: 16px 20px;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+
+        .comparison-card.bad .prompt-example {
+            background: rgba(255,80,80,0.06);
+            border: 1px solid rgba(255,80,80,0.12);
+            color: #cc9999;
+        }
+
+        .comparison-card.good .prompt-example {
+            background: rgba(29,185,84,0.06);
+            border: 1px solid rgba(29,185,84,0.12);
+            color: #a3d9b3;
+        }
+
+        /* === HOW IT WORKS === */
+        .how-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .how-section h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
         .steps {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            max-width: 720px;
-            margin-top: 80px;
         }
 
         .step {
             background: var(--bg-card);
-            border: 1px solid rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 28px 24px;
-            text-align: left;
+            padding: 32px 24px;
         }
 
         .step-num {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--green);
+            font-family: 'Syne', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--green), rgba(29,185,84,0.2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            line-height: 1;
+        }
+
+        .step h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            font-size: 0.88rem;
+            color: var(--text-dim);
+            line-height: 1.55;
+        }
+
+        /* === DEMO CONVERSATION === */
+        .demo-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .demo-section h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-align: center;
             margin-bottom: 12px;
         }
 
-        .step-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .step-desc {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            line-height: 1.5;
-        }
-
-        footer {
-            margin-top: 80px;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.7rem;
-            color: var(--text-dim);
+        .demo-subtitle {
             text-align: center;
-            opacity: 0.6;
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            margin-bottom: 40px;
         }
 
-        @media (max-width: 640px) {
-            .steps { grid-template-columns: 1fr; max-width: 360px; }
+        .demo-phone {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.4);
         }
 
-        /* Entrance animations */
-        .hero, .steps, footer {
-            animation: fadeUp 0.8s ease-out both;
+        .demo-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
         }
-        .steps { animation-delay: 0.2s; }
-        footer { animation-delay: 0.4s; }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(24px); }
+        .demo-header-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+
+        .demo-header-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-dim);
+        }
+
+        .demo-messages {
+            padding: 20px;
+            max-height: 520px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .demo-messages::-webkit-scrollbar { width: 4px; }
+        .demo-messages::-webkit-scrollbar-track { background: transparent; }
+        .demo-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+        .demo-msg {
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .demo-msg.visible {
+            animation: demoMsgIn 0.4s ease-out forwards;
+        }
+
+        .demo-msg.user { flex-direction: row-reverse; }
+
+        .demo-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .demo-msg.ai .demo-avatar {
+            background: var(--green-dim);
+            border: 1px solid rgba(29,185,84,0.2);
+        }
+
+        .demo-msg.user .demo-avatar {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--border);
+        }
+
+        .demo-bubble {
+            max-width: 82%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 0.84rem;
+            line-height: 1.55;
+        }
+
+        .demo-msg.ai .demo-bubble {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+            color: var(--text);
+        }
+
+        .demo-msg.user .demo-bubble {
+            background: rgba(29,185,84,0.12);
+            border: 1px solid rgba(29,185,84,0.15);
+            border-bottom-right-radius: 4px;
+            color: #d4f5e0;
+        }
+
+        .demo-prompt-card {
+            background: linear-gradient(135deg, rgba(29,185,84,0.08), rgba(29,100,185,0.06));
+            border: 1px solid rgba(29,185,84,0.25);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 10px;
+        }
+
+        .demo-prompt-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--green);
+            margin-bottom: 10px;
+        }
+
+        .demo-prompt-text {
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .demo-copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 12px;
+            padding: 6px 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #000;
+            background: var(--green);
+            border: none;
+            border-radius: 100px;
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        @keyframes demoMsgIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === FINAL CTA === */
+        .final-cta {
+            text-align: center;
+            padding: 60px 24px 40px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .final-cta h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .final-cta p {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        /* === FOOTER === */
+        footer {
+            text-align: center;
+            padding: 40px 24px 32px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        footer a { color: var(--text-dim); text-decoration: none; }
+        footer a:hover { color: var(--text); }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 700px) {
+            .comparison { grid-template-columns: 1fr; }
+            .steps { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+            nav { padding: 16px 20px; }
+            .hero { padding: 50px 20px 40px; }
+            .demo-phone { margin: 0 -4px; border-radius: 20px; }
+        }
+
+        /* === SCROLL ANIMATIONS === */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
+
+    <div class="bg-orb one"></div>
+    <div class="bg-orb two"></div>
+
     <div class="page">
-        <div class="hero">
-            <span class="badge">Spotify AI Playlist Helper</span>
-            <h1>Write playlists that <span class="accent">actually sound like you</span></h1>
-            <p class="tagline">
-                Connect your Spotify library. Chat with an AI that knows your taste.
-                Get a perfect prompt for Spotify's playlist creator — in seconds.
+
+        <!-- NAV -->
+        <nav>
+            <span class="nav-logo">Playlist Buddy</span>
+            <a href="/login" class="nav-cta">Get Started</a>
+        </nav>
+
+        <!-- HERO -->
+        <section class="hero fade-in">
+            <span class="hero-badge">Spotify AI Playlist Helper</span>
+            <h1>Stop writing lazy prompts.<br><span class="accent">Your music deserves better.</span></h1>
+            <p class="hero-sub">
+                Spotify's AI can build incredible playlists — but only if you tell it exactly what you want.
+                Playlist Buddy reads your library, learns your taste, and helps you write prompts that actually work.
             </p>
-            <a href="/login" class="connect-btn">
+            <a href="/login" class="hero-cta">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381C8.64 5.801 15.6 6.06 20.04 8.94c.6.36.78 1.021.42 1.56-.36.48-1.02.66-1.56.36l-.12-.06z"/>
                 </svg>
                 Connect with Spotify
             </a>
-        </div>
+        </section>
 
-        <div class="steps">
-            <div class="step">
-                <div class="step-num">01</div>
-                <div class="step-title">Connect</div>
-                <div class="step-desc">Link your Spotify account. We read your liked songs, playlists, and listening patterns.</div>
+        <!-- PROBLEM vs SOLUTION -->
+        <section class="problem-section fade-in">
+            <div class="comparison">
+                <div class="comparison-card bad">
+                    <div class="section-label problem">The problem</div>
+                    <h3>Vague prompts get generic playlists</h3>
+                    <p>Most people type something like this into Spotify's AI and wonder why the result sounds like elevator music:</p>
+                    <div class="prompt-example">
+                        "chill vibes for studying"
+                    </div>
+                </div>
+                <div class="comparison-card good">
+                    <div class="section-label solution">With Playlist Buddy</div>
+                    <h3>Specific prompts get playlists that hit</h3>
+                    <p>We help you write prompts that reference your actual taste — artists you love, sounds you gravitate toward:</p>
+                    <div class="prompt-example">
+                        "A boom-bap playlist with 90s-style drums and smooth, soulful vocals. Think Fugees 'Ready or Not' energy — jazzy samples, laid-back flow, with artists like J. Cole, A$AP Rocky, and Joey Bada$$. Mix in some neo-soul undertones."
+                    </div>
+                </div>
             </div>
-            <div class="step">
-                <div class="step-num">02</div>
-                <div class="step-title">Chat</div>
-                <div class="step-desc">Tell the AI what playlist you want. It already knows your taste and asks smart follow-ups.</div>
+        </section>
+
+        <!-- HOW IT WORKS -->
+        <section class="how-section fade-in">
+            <h2>How it works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <h3>Connect your Spotify</h3>
+                    <p>We read your liked songs, playlists, top artists, and listening patterns. Takes about 10 seconds.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <h3>Chat about what you want</h3>
+                    <p>Our AI already knows your taste. Tell it the vibe — it asks smart follow-ups to nail the details.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <h3>Copy your prompt</h3>
+                    <p>Get a detailed, ready-to-paste prompt. Drop it into Spotify's AI playlist feature and enjoy.</p>
+                </div>
             </div>
-            <div class="step">
-                <div class="step-num">03</div>
-                <div class="step-title">Create</div>
-                <div class="step-desc">Get a detailed, copy-paste-ready prompt. Drop it into Spotify's AI playlist feature.</div>
+        </section>
+
+        <!-- DEMO CONVERSATION -->
+        <section class="demo-section fade-in">
+            <h2>See it in action</h2>
+            <p class="demo-subtitle">A real conversation with Playlist Buddy</p>
+
+            <div class="demo-phone">
+                <div class="demo-header">
+                    <div class="demo-header-dot"></div>
+                    <span class="demo-header-text">Playlist Buddy</span>
+                </div>
+                <div class="demo-messages" id="demoMessages">
+
+                    <div class="demo-msg ai" data-delay="400">
+                        <div class="demo-avatar">🎵</div>
+                        <div class="demo-bubble">Hey there! I can see you've got great taste — lots of Drake and J. Cole in your library! What kind of playlist are you thinking about?</div>
+                    </div>
+
+                    <div class="demo-msg user" data-delay="1200">
+                        <div class="demo-avatar">👤</div>
+                        <div class="demo-bubble">I want a boom-bap sounding playlist with 90's sounding drums and smooth vocals. The songs don't need to be from the 90's, but need to give that vibe</div>
+                    </div>
+
+                    <div class="demo-msg ai" data-delay="2200">
+                        <div class="demo-avatar">🎵</div>
+                        <div class="demo-bubble">That sounds awesome! Since you have a lot of hip-hop in your library, we can definitely pull from the artists you love. Do you want mostly familiar tracks, or are you open to discovering some new artists that fit that boom-bap vibe?</div>
+                    </div>
+
+                    <div class="demo-msg user" data-delay="3200">
+                        <div class="demo-avatar">👤</div>
+                        <div class="demo-bubble">Mostly familiar tracks</div>
+                    </div>
+
+                    <div class="demo-msg ai" data-delay="4000">
+                        <div class="demo-avatar">🎵</div>
+                        <div class="demo-bubble">Great! Any specific songs or artists you'd like to make sure are included?</div>
+                    </div>
+
+                    <div class="demo-msg user" data-delay="4800">
+                        <div class="demo-avatar">👤</div>
+                        <div class="demo-bubble">I really love Ready or Not by Fugees. Songs like that please</div>
+                    </div>
+
+                    <div class="demo-msg ai" data-delay="5800">
+                        <div class="demo-avatar">🎵</div>
+                        <div class="demo-bubble">
+                            Here's your playlist prompt — ready to paste into Spotify:
+                            <div class="demo-prompt-card">
+                                <div class="demo-prompt-label">✨ Your Playlist Prompt</div>
+                                <div class="demo-prompt-text">A boom-bap playlist with 90s-style drums, jazzy samples, and smooth soulful vocals. Think Fugees "Ready or Not" energy — laid-back grooves with lyrical depth. Feature artists like J. Cole, A$AP Rocky, Joey Bada$$, and Nas, with neo-soul undertones and head-nodding beats. Keep it mostly familiar tracks with that golden-era hip-hop feel, even if the songs are modern.</div>
+                                <div class="demo-copy-btn">📋 Copy prompt</div>
+                            </div>
+                            Want me to tweak anything?
+                        </div>
+                    </div>
+
+                </div>
             </div>
-        </div>
+        </section>
+
+        <!-- FINAL CTA -->
+        <section class="final-cta fade-in">
+            <h2>Your library. Your taste. Better playlists.</h2>
+            <p>Connect your Spotify and start building playlists that actually sound like you.</p>
+            <a href="/login" class="hero-cta">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381C8.64 5.801 15.6 6.06 20.04 8.94c.6.36.78 1.021.42 1.56-.36.48-1.02.66-1.56.36l-.12-.06z"/>
+                </svg>
+                Connect with Spotify
+            </a>
+        </section>
 
         <footer>
             Your data stays between you and the app. We never store your Spotify credentials.
+            <br><br>
+            <a href="https://github.com/reef111qq/playlist-buddy">GitHub</a>
         </footer>
+
     </div>
+
+    <script>
+        // === Scroll-triggered fade-in animations ===
+        const fadeEls = document.querySelectorAll('.fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        fadeEls.forEach(el => observer.observe(el));
+
+        // === Demo conversation auto-play ===
+        const demoSection = document.querySelector('.demo-section');
+        const demoMessages = document.querySelectorAll('.demo-msg');
+        let demoStarted = false;
+
+        const demoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !demoStarted) {
+                    demoStarted = true;
+                    demoMessages.forEach((msg) => {
+                        const delay = parseInt(msg.dataset.delay) || 0;
+                        setTimeout(() => {
+                            msg.classList.add('visible');
+                            const container = document.getElementById('demoMessages');
+                            container.scrollTop = container.scrollHeight;
+                        }, delay);
+                    });
+                    demoObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        demoObserver.observe(demoSection);
+    </script>
 </body>
 </html>
