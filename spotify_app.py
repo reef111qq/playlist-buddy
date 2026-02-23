@@ -131,9 +131,14 @@ def fetch_liked_songs(sp, limit=500):
 
 def fetch_playlists(sp):
     """
-    Fetch the user's playlists (name + track count only).
-    Playlist names tell the chatbot a lot about the user's listening contexts
-    (e.g., "Workout", "Rainy Day", "Road Trip").
+    Fetch the user's playlists INCLUDING the songs inside them.
+    
+    For each playlist we grab:
+    - The playlist name and track count
+    - Up to 50 song names + artists from inside it
+    
+    This lets the chatbot reference specific songs the user has curated
+    into playlists, not just the playlist names.
     """
     playlists = []
     try:
@@ -142,10 +147,38 @@ def fetch_playlists(sp):
             for item in results.get('items', []):
                 if not item:
                     continue
+                
+                playlist_id = item.get('id')
+                playlist_name = item.get('name', 'Untitled')
+                track_count = item.get('tracks', {}).get('total', 0)
+                
+                # Fetch songs inside this playlist (up to 50 per playlist)
+                songs = []
+                if playlist_id and track_count > 0:
+                    try:
+                        tracks_result = sp.playlist_tracks(
+                            playlist_id, 
+                            limit=50,
+                            fields='items(track(name,artists(name)))'
+                        )
+                        for t_item in tracks_result.get('items', []):
+                            track = t_item.get('track')
+                            if not track or not track.get('name'):
+                                continue
+                            artist = track['artists'][0]['name'] if track.get('artists') else 'Unknown'
+                            songs.append({
+                                'name': track['name'],
+                                'artist': artist,
+                            })
+                    except Exception as e:
+                        logger.error(f"Error fetching tracks for playlist '{playlist_name}': {e}")
+                
                 playlists.append({
-                    'name': item.get('name', 'Untitled'),
-                    'tracks': item.get('tracks', {}).get('total', 0),
+                    'name': playlist_name,
+                    'tracks': track_count,
+                    'songs': songs,
                 })
+
             if results.get('next'):
                 results = sp.next(results)
             else:
@@ -153,7 +186,7 @@ def fetch_playlists(sp):
     except Exception as e:
         logger.error(f"Error fetching playlists: {e}")
     
-    logger.info(f"Fetched {len(playlists)} playlists")
+    logger.info(f"Fetched {len(playlists)} playlists with songs")
     return playlists
 
 
@@ -283,13 +316,20 @@ def summarize_library(liked_songs, playlists, top_artists, top_tracks):
         for t in top_tracks[:15]:
             parts.append(f"  • \"{t['name']}\" by {t['artist']}")
 
-    # --- Playlists (reveal listening contexts and moods) ---
+    # --- Playlists with their actual songs ---
     if playlists:
         parts.append(f"\n=== PLAYLISTS ({len(playlists)} total) ===")
         # Sort by track count to show the playlists they've invested most in
         sorted_playlists = sorted(playlists, key=lambda p: p['tracks'], reverse=True)
-        for p in sorted_playlists[:20]:
-            parts.append(f"  • \"{p['name']}\" — {p['tracks']} tracks")
+        for p in sorted_playlists[:15]:
+            songs = p.get('songs', [])
+            if songs:
+                # Show up to 8 songs per playlist
+                song_strs = [f"{s['name']} – {s['artist']}" for s in songs[:8]]
+                extra = f" (+{len(songs) - 8} more)" if len(songs) > 8 else ""
+                parts.append(f"  • \"{p['name']}\" ({p['tracks']} tracks): {', '.join(song_strs)}{extra}")
+            else:
+                parts.append(f"  • \"{p['name']}\" — {p['tracks']} tracks")
 
     summary = "\n".join(parts)
     logger.info(f"Library summary: {len(summary)} chars, ~{len(summary.split())} words")
