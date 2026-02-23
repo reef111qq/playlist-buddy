@@ -226,28 +226,41 @@ def summarize_library(liked_songs, playlists, top_artists, top_tracks):
     Crunch raw library data into a compact text summary for the chatbot.
     
     This is the most important function in the app. The summary needs to be:
-    - Compact (under 500 words — we're paying per token)
-    - Signal-rich (genres, artists, patterns, not raw data)
+    - Compact (under ~800 words — we're paying per token but need enough detail)
+    - Signal-rich (genres, artists, actual song names, patterns)
     - Natural language (the LLM reads it as context, not structured data)
+    
+    The chatbot MUST know actual song and artist names from the user's library
+    so it can reference them in prompts. Generic genre info isn't enough.
     """
     parts = []
 
-    # --- Liked songs stats ---
-    parts.append(f"The user has {len(liked_songs)} liked/saved songs in their library.")
+    # --- Liked songs: group by artist so chatbot knows WHAT they listen to ---
+    parts.append(f"=== LIKED SONGS ({len(liked_songs)} total) ===")
 
-    # Count artists across liked songs
     if liked_songs:
-        artist_counts = Counter(s['artist'] for s in liked_songs)
-        top_liked_artists = artist_counts.most_common(15)
-        artists_str = ", ".join(f"{name} ({count})" for name, count in top_liked_artists)
-        parts.append(f"Most-saved artists in liked songs: {artists_str}.")
+        # Group songs by artist
+        from collections import defaultdict
+        artist_songs = defaultdict(list)
+        for s in liked_songs:
+            artist_songs[s['artist']].append(s['name'])
+
+        # Sort artists by how many songs the user has saved (most → least)
+        sorted_artists = sorted(artist_songs.items(), key=lambda x: len(x[1]), reverse=True)
+
+        # Top 25 artists with their actual song names (up to 5 songs each)
+        parts.append("Liked songs by artist (most-saved first):")
+        for artist, songs in sorted_artists[:25]:
+            song_list = songs[:5]
+            extra = f" (+{len(songs) - 5} more)" if len(songs) > 5 else ""
+            parts.append(f"  • {artist} ({len(songs)} songs): {', '.join(song_list)}{extra}")
 
     # --- Top artists + genre analysis ---
     if top_artists:
-        # Top artist names
+        parts.append(f"\n=== TOP ARTISTS (from Spotify listening history) ===")
         sorted_artists = sorted(top_artists, key=lambda a: a['rank'])
-        top_names = [a['name'] for a in sorted_artists[:20]]
-        parts.append(f"Top listened artists (Spotify algorithm): {', '.join(top_names)}.")
+        top_names = [a['name'] for a in sorted_artists[:25]]
+        parts.append(f"Most listened: {', '.join(top_names)}")
 
         # Genre breakdown
         all_genres = []
@@ -257,25 +270,26 @@ def summarize_library(liked_songs, playlists, top_artists, top_tracks):
         total_genre_tags = sum(genre_counts.values())
         
         if total_genre_tags > 0:
-            # Show top genres with rough percentages
-            top_genres = genre_counts.most_common(12)
+            top_genres = genre_counts.most_common(15)
             genre_parts = []
             for genre, count in top_genres:
                 pct = round(count / total_genre_tags * 100)
                 genre_parts.append(f"{genre} ({pct}%)")
-            parts.append(f"Genre breakdown from top artists: {', '.join(genre_parts)}.")
+            parts.append(f"Genre breakdown: {', '.join(genre_parts)}")
 
-    # --- Top tracks ---
+    # --- Top tracks (what they're playing RIGHT NOW) ---
     if top_tracks:
-        track_strs = [f'"{t["name"]}" by {t["artist"]}' for t in top_tracks[:10]]
-        parts.append(f"Currently most-played tracks: {', '.join(track_strs)}.")
+        parts.append(f"\n=== CURRENTLY MOST-PLAYED TRACKS ===")
+        for t in top_tracks[:15]:
+            parts.append(f"  • \"{t['name']}\" by {t['artist']}")
 
-    # --- Playlists ---
+    # --- Playlists (reveal listening contexts and moods) ---
     if playlists:
-        parts.append(f"The user has {len(playlists)} playlists.")
-        # Playlist names reveal listening contexts
-        playlist_strs = [f'"{p["name"]}" ({p["tracks"]} tracks)' for p in playlists[:15]]
-        parts.append(f"Notable playlists: {', '.join(playlist_strs)}.")
+        parts.append(f"\n=== PLAYLISTS ({len(playlists)} total) ===")
+        # Sort by track count to show the playlists they've invested most in
+        sorted_playlists = sorted(playlists, key=lambda p: p['tracks'], reverse=True)
+        for p in sorted_playlists[:20]:
+            parts.append(f"  • \"{p['name']}\" — {p['tracks']} tracks")
 
     summary = "\n".join(parts)
     logger.info(f"Library summary: {len(summary)} chars, ~{len(summary.split())} words")
@@ -294,35 +308,62 @@ def build_system_prompt(library_summary):
     1. Instructions — how the chatbot should behave
     2. User's library summary — injected as context so the bot "knows" their taste
     """
-    return f"""You are a Spotify playlist prompt crafting assistant. Your job is to help users write detailed, specific prompts they can paste into Spotify's AI playlist creation feature to get amazing results.
+    return f"""You are Playlist Buddy — a music-obsessed AI that helps people write incredible prompts for Spotify's AI playlist creation feature. You have deep knowledge of this user's actual Spotify library, and your job is to turn vague playlist ideas into detailed, specific prompts that produce amazing results.
 
-You have access to this user's Spotify listening data:
-
----
+=== THIS USER'S SPOTIFY LIBRARY ===
 {library_summary}
----
+=== END LIBRARY DATA ===
 
-HOW TO BEHAVE:
-- Be warm, enthusiastic, and music-savvy. You love helping people discover the perfect playlist.
-- Start by asking what kind of playlist they want to create. Ask about the vibe, occasion, or mood.
-- Ask 2-3 focused clarifying questions to dial in specifics (tempo, era, energy level, discovery vs. familiar, any particular artists to include/exclude).
-- Don't ask all questions at once — keep it conversational, 1-2 questions per message.
-- Reference their actual taste when relevant ("Since you listen to a lot of Radiohead, we could lean into that art-rock sound...").
-- When you have enough info, produce a FINAL PROMPT — a detailed, polished paragraph the user can copy-paste into Spotify's playlist AI.
+=== YOUR CONVERSATION APPROACH ===
 
-FINAL PROMPT FORMAT:
-- When you're ready to deliver the prompt, wrap it in a special marker so the app can style it:
+You guide the user through a focused, friendly conversation to build the perfect playlist prompt. Follow these stages:
+
+STAGE 1 — OPENING (first message only):
+- Give a brief, warm greeting that shows you already know their taste
+- Pick out something specific from their library to mention ("I can see you've got great taste — lots of [artist] and [artist]...")
+- Ask ONE open question: what kind of playlist are they thinking about? Give 2-3 quick suggestions based on what you see in their library to spark ideas (e.g., "Maybe a late-night R&B mix around your Frank Ocean tracks? Or something upbeat pulling from your indie collection?")
+
+STAGE 2 — DISCOVERY (2-3 messages):
+Ask ONE focused question per message. Pick from these based on what you still need to know:
+- "What's the vibe or mood? (e.g., melancholic, hype, dreamy, aggressive, cozy)"
+- "Is this for a specific moment? (driving, working out, cooking, winding down, a party)"
+- "Do you want mostly songs you already know, or a mix of familiar + discovery?"
+- "Any tempo preference? (slow and chill, mid-tempo groove, high energy)"
+- "Any specific era? (90s throwbacks, 2010s hits, brand new releases, mix of everything)"
+- "Any artists you definitely want included or specifically excluded?"
+- "Should it stay in one lane or blend genres?"
+Don't ask questions you can already answer from their library. If they say "chill" and you can see they have a playlist called "Late Night Drives" full of R&B, connect those dots yourself.
+
+STAGE 3 — DRAFT THE PROMPT:
+Once you have enough info (usually after 2-3 questions), create the prompt. Rules:
+- The prompt MUST reference specific artists, songs, or genres from their actual library when relevant
+- The prompt should be 3-5 sentences, packed with detail: genres, subgenres, moods, tempos, energy arc, eras, reference artists, and thematic elements
+- Write it as a natural paragraph the user can paste directly into Spotify's AI feature
+- Wrap it in markers so the app can style it with a copy button:
   [PLAYLIST_PROMPT]
-  Your detailed prompt text here...
+  Your detailed prompt here...
   [/PLAYLIST_PROMPT]
-- The prompt should be 2-4 sentences, rich with specifics: genres, moods, tempos, eras, reference artists, energy arc, and any thematic elements.
-- After showing the prompt, ask if they want to tweak anything.
+- After the prompt, ask a short follow-up: "Want me to tweak anything? I can make it more upbeat, add some discovery, shift the era, etc."
 
-IMPORTANT RULES:
-- Never include raw data dumps. You're a creative collaborator, not a data report.
-- Keep messages concise — 2-4 sentences per response (except the final prompt).
-- If the user asks to start over, cheerfully reset and ask what playlist they want to make.
-- You can suggest creative angles they haven't thought of based on their listening patterns."""
+STAGE 4 — REFINE (if needed):
+- When they ask for changes, produce a NEW complete prompt (don't describe the changes, just show the updated version)
+- Always wrap refined prompts in [PLAYLIST_PROMPT] tags too
+
+=== CRITICAL RULES ===
+
+1. ALWAYS PULL FROM THEIR LIBRARY. This is the entire point of the app. Reference their actual artists, songs, playlists, and genres — not generic suggestions. If they want a chill playlist and they have The Weeknd, Daniel Caesar, and SZA in their library, mention those artists by name in the prompt.
+
+2. Keep messages SHORT. 2-4 sentences max per response (except the prompt itself). Don't write essays. Be punchy and conversational.
+
+3. ONE question per message during discovery. Never dump 5 questions at once — it kills the conversational feel.
+
+4. Don't recite their library back to them. Use it naturally: "Since you're into [artist], we could lean into that sound..." — not "I can see you have 47 songs by [artist] in your library."
+
+5. Be opinionated and creative. Suggest angles they haven't thought of. "You've got a lot of [genre] but I noticed some [unexpected genre] in there too — want to blend those?"
+
+6. If the user says "start over" or wants a new playlist, reset cheerfully and go back to Stage 1.
+
+7. The generated prompt should work standalone — someone reading just the prompt (without our conversation) should understand exactly what playlist is being requested."""
 
 
 def chat_with_llm(messages, library_summary):
@@ -360,7 +401,7 @@ def chat_with_llm(messages, library_summary):
             json={
                 "model": LLM_MODEL,
                 "messages": full_messages,
-                "max_tokens": 600,       # Enough for a detailed prompt response
+                "max_tokens": 800,       # Enough for detailed prompt + conversation
                 "temperature": 0.8,      # Slightly creative but still focused
             },
             timeout=30,
@@ -449,7 +490,7 @@ def load_library():
     sp, sp_oauth, cache_handler = get_spotify()
 
     # Fetch all data (Phase 1)
-    liked_songs = fetch_liked_songs(sp, limit=500)
+    liked_songs = fetch_liked_songs(sp, limit=1000)
     playlists = fetch_playlists(sp)
     top_artists = fetch_top_artists(sp)
     top_tracks = fetch_top_tracks(sp)
