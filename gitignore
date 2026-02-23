@@ -8,19 +8,8 @@ env/
 venv/
 ENV/
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
 
 # Flask
@@ -48,6 +37,6 @@ instance/
 .DS_Store
 Thumbs.db
 
-# Secrets - NEVER COMMIT THESE!
+# Secrets — NEVER COMMIT THESE!
 client_secret.txt
 credentials.json
