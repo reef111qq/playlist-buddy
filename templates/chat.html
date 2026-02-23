@@ -422,6 +422,151 @@
             50% { transform: translateY(6px); opacity: 1; }
         }
 
+        /* --- Music Guide --- */
+        .guide-section {
+            margin-top: 56px;
+            margin-bottom: 16px;
+        }
+
+        .guide-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .guide-intro {
+            font-size: 0.88rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+            max-width: 540px;
+            margin: 0 auto 12px;
+        }
+
+        .guide-tip {
+            font-size: 0.82rem;
+            color: var(--green);
+            background: rgba(29,185,84,0.06);
+            border: 1px solid rgba(29,185,84,0.15);
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 100px;
+            margin-top: 8px;
+        }
+
+        .guide-tip em {
+            font-style: italic;
+            color: var(--green-glow);
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .guide-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 22px;
+            transition: border-color 0.2s ease;
+        }
+
+        .guide-card:hover {
+            border-color: rgba(29,185,84,0.2);
+        }
+
+        .guide-icon {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .guide-card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .guide-desc {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            line-height: 1.55;
+            margin-bottom: 14px;
+        }
+
+        .guide-examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .guide-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            padding: 4px 12px;
+            border-radius: 100px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        .guide-scale {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scale-end {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .scale-end.low { text-align: right; }
+        .scale-end.high { text-align: left; }
+
+        .scale-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 2px;
+            overflow: hidden;
+            min-width: 60px;
+        }
+
+        .scale-fill {
+            height: 100%;
+            border-radius: 2px;
+            width: 50%;
+        }
+
+        .scale-fill.energy {
+            background: linear-gradient(90deg, #4ade80, #f59e0b);
+            width: 65%;
+        }
+
+        .scale-fill.temp {
+            background: linear-gradient(90deg, #60a5fa, #f97316);
+            width: 45%;
+        }
+
+        .scale-fill.space {
+            background: linear-gradient(90deg, #818cf8, #fb923c);
+            width: 55%;
+        }
+
+        .scale-fill.mood {
+            background: linear-gradient(90deg, #fbbf24, #8b5cf6);
+            width: 40%;
+        }
+
+        .scale-fill.structure {
+            background: linear-gradient(90deg, #34d399, #ec4899);
+            width: 50%;
+        }
+
         /* ============ CHAT MESSAGES (live) ============ */
         .messages-wrapper {
             max-width: 720px;
@@ -623,6 +768,7 @@
         @media (max-width: 700px) {
             .steps-row { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; }
             .demos-row { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+            .guide-grid { grid-template-columns: 1fr; }
             .welcome-section { padding: 32px 16px 24px; }
             .header { padding: 12px 16px; }
             .input-area { padding: 16px; }
@@ -768,6 +914,90 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- Music Guide -->
+            <div class="guide-section">
+                <div class="guide-header">
+                    <div class="section-title">Words to describe your sound</div>
+                    <p class="guide-intro">Not sure how to describe the playlist you want? Here are six ways to think about music. Use any of these when chatting — the AI will know exactly what you mean.</p>
+                    <p class="guide-tip">💡 Try asking the AI: <em>"What genre would you call my music?"</em> — it can look at your library and tell you.</p>
+                </div>
+
+                <div class="guide-grid">
+
+                    <div class="guide-card">
+                        <div class="guide-icon">🎸</div>
+                        <h3>Genre</h3>
+                        <p class="guide-desc">The broad category your music falls into. This is the biggest way to separate different types of music.</p>
+                        <div class="guide-examples">
+                            <span class="guide-tag">Hip Hop</span>
+                            <span class="guide-tag">Rock</span>
+                            <span class="guide-tag">Pop</span>
+                            <span class="guide-tag">R&B</span>
+                            <span class="guide-tag">Indie</span>
+                            <span class="guide-tag">Country</span>
+                            <span class="guide-tag">Folk</span>
+                            <span class="guide-tag">Alternative</span>
+                        </div>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-icon">⚡</div>
+                        <h3>Energy</h3>
+                        <p class="guide-desc">How fast or intense the song feels. Think: is this a "laying on the couch" song or a "running on the treadmill" song?</p>
+                        <div class="guide-scale">
+                            <div class="scale-end low">Chill &amp; Slow</div>
+                            <div class="scale-bar"><div class="scale-fill energy"></div></div>
+                            <div class="scale-end high">Intense &amp; Fast</div>
+                        </div>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-icon">🌡️</div>
+                        <h3>Temperature</h3>
+                        <p class="guide-desc">Does the song feel "cold" and electronic — like synths and computers? Or "warm" and human — like a live band in a cozy room?</p>
+                        <div class="guide-scale">
+                            <div class="scale-end low">Cold &amp; Electronic</div>
+                            <div class="scale-bar"><div class="scale-fill temp"></div></div>
+                            <div class="scale-end high">Warm &amp; Organic</div>
+                        </div>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-icon">🌅</div>
+                        <h3>Space</h3>
+                        <p class="guide-desc">Does the song feel huge and echoey — like standing in an open field? Or close and personal — like someone whispering right next to you?</p>
+                        <div class="guide-scale">
+                            <div class="scale-end low">Wide &amp; Echoey</div>
+                            <div class="scale-bar"><div class="scale-fill space"></div></div>
+                            <div class="scale-end high">Close &amp; Intimate</div>
+                        </div>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-icon">🎨</div>
+                        <h3>Mood</h3>
+                        <p class="guide-desc">Does the song feel bright and uplifting — like sunshine? Or dark and moody — like a rainy night? This is the emotional "color" of the music.</p>
+                        <div class="guide-scale">
+                            <div class="scale-end low">Bright &amp; Uplifting</div>
+                            <div class="scale-bar"><div class="scale-fill mood"></div></div>
+                            <div class="scale-end high">Dark &amp; Moody</div>
+                        </div>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-icon">🔄</div>
+                        <h3>Structure</h3>
+                        <p class="guide-desc">Does the song ride one repeating groove the whole way through — hypnotic and steady? Or does it build and change — like a story with a beginning, middle, and end?</p>
+                        <div class="guide-scale">
+                            <div class="scale-end low">Steady Loop</div>
+                            <div class="scale-bar"><div class="scale-fill structure"></div></div>
+                            <div class="scale-end high">Builds &amp; Evolves</div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
             <!-- Start chatting nudge -->
