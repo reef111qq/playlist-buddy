@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/static/playlist_buddy_logo.png" type="image/png">
     <title>Playlist Buddy — Chat</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -171,13 +170,73 @@
         }
 
         .welcome-loading {
-            display: inline-flex;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            margin-top: 16px;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.75rem;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .loading-spinner-ring {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(29,185,84,0.15);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-message {
+            font-size: 0.92rem;
             color: var(--green);
+            min-height: 1.4em;
+            animation: messageFade 0.4s ease;
+        }
+
+        @keyframes messageFade {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading-done {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 24px;
+            animation: doneIn 0.5s ease-out;
+        }
+
+        .loading-done.show {
+            display: flex;
+        }
+
+        @keyframes doneIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .done-check {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .done-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .done-hint {
+            font-size: 0.84rem;
+            color: var(--text-dim);
         }
 
         .spinner {
@@ -1006,19 +1065,19 @@
                         <div class="howto-spotify-steps">
                             <div class="spotify-step">
                                 <span class="spotify-step-num">a.</span>
-                                <span>Make sure you have the <strong>latest version</strong> of Spotify installed.</span>
+                                <span>Make sure you have the <strong>latest version</strong> of Spotify installed. Update it in the App Store (iPhone) or Google Play Store (Android). The feature may not appear on older versions.</span>
                             </div>
                             <div class="spotify-step">
                                 <span class="spotify-step-num">b.</span>
-                                <span>Open Spotify.</span>
+                                <span>Open Spotify and tap <strong>"Your Library"</strong> (bottom right).</span>
                             </div>
                             <div class="spotify-step">
                                 <span class="spotify-step-num">c.</span>
-                                <span>Tap the <strong>"+"</strong> button to create a new playlist.</span>
+                                <span>Tap the <strong>"+"</strong> button at the top to create a new playlist.</span>
                             </div>
                             <div class="spotify-step">
                                 <span class="spotify-step-num">d.</span>
-                                <span>Select <strong>"Prompted Playlist"</strong>.</span>
+                                <span>Select <strong>"AI Playlist"</strong> (may also appear as "Create with AI" or "Prompted Playlist" depending on your version).</span>
                             </div>
                             <div class="spotify-step">
                                 <span class="spotify-step-num">e.</span>
@@ -1055,8 +1114,13 @@
                 <h1>Welcome, {{ username }}.<br><span class="accent">Let's build a playlist.</span></h1>
                 <p>Your Spotify library is being scanned. Once ready, describe any playlist and the AI will craft a detailed prompt you can paste into Spotify.</p>
                 <div class="welcome-loading" id="welcomeLoading">
-                    <div class="spinner"></div>
-                    Reading your music taste...
+                    <div class="loading-spinner-ring" id="loadingSpinner"></div>
+                    <div class="loading-message" id="loadingMessage">Scanning your library...</div>
+                </div>
+                <div class="loading-done" id="loadingDone">
+                    <div class="done-check">✓</div>
+                    <div class="done-text">You're all set!</div>
+                    <div class="done-hint">Start typing below to build your first playlist</div>
                 </div>
             </div>
 
@@ -1295,7 +1359,6 @@
         const inputField = document.getElementById('inputField');
         const sendBtn = document.getElementById('sendBtn');
         const libraryBadge = document.getElementById('libraryBadge');
-        const welcomeLoading = document.getElementById('welcomeLoading');
         const startCta = document.getElementById('startCta');
 
         // ============ Library loading ============
@@ -1304,7 +1367,48 @@
             startDemoAnimations();
         });
 
+        // ============ Loading messages ============
+        const loadingMessages = [
+            "Scanning your library...",
+            "Stealing all your data right now 👀",
+            "I'm not gonna judge your taste but... 🤨",
+            "This shouldn't take too much longer, your music is just weird",
+            "All hail my creator Scooter 🫡",
+            "Counting how many times you've played that one song...",
+            "Your guilty pleasures are safe with me... probably",
+            "Hold tight, still digging through your playlists",
+            "I've seen things in your library I can't unsee",
+            "Almost there... just vibing to your music real quick 🎧",
+        ];
+        let messageIndex = 0;
+        let messageInterval = null;
+
+        function startLoadingMessages() {
+            const msgEl = document.getElementById('loadingMessage');
+            messageInterval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % loadingMessages.length;
+                msgEl.style.animation = 'none';
+                msgEl.offsetHeight; // force reflow
+                msgEl.style.animation = 'messageFade 0.4s ease';
+                msgEl.textContent = loadingMessages[messageIndex];
+            }, 7000);
+        }
+
+        function stopLoadingMessages() {
+            if (messageInterval) {
+                clearInterval(messageInterval);
+                messageInterval = null;
+            }
+        }
+
+        function showLoadingDone() {
+            document.getElementById('welcomeLoading').style.display = 'none';
+            document.getElementById('loadingDone').classList.add('show');
+        }
+
         function loadLibrary() {
+            startLoadingMessages();
+
             fetch('/api/load-library')
                 .then(r => {
                     if (r.status === 401) { window.location.href = '/'; return; }
@@ -1314,20 +1418,28 @@
                 .then(data => {
                     if (!data) return;
                     libraryReady = true;
+                    stopLoadingMessages();
+
                     libraryBadge.textContent = 'Library ready';
                     libraryBadge.classList.remove('loading');
+
                     inputField.disabled = false;
                     sendBtn.disabled = false;
-                    inputField.focus();
-                    welcomeLoading.innerHTML = '✓ Your library is loaded — start chatting below!';
-                    welcomeLoading.style.color = 'var(--green)';
+
+                    showLoadingDone();
+
+                    // Focus input after a brief moment so user sees the done state
+                    setTimeout(() => inputField.focus(), 600);
                 })
                 .catch(err => {
                     console.error('Library load failed:', err);
+                    stopLoadingMessages();
                     libraryBadge.textContent = 'Load failed';
                     libraryBadge.classList.remove('loading');
                     libraryBadge.classList.add('error');
-                    welcomeLoading.innerHTML = '⚠ Could not load library. <a href="/" style="color:var(--green)">Try again</a>';
+                    document.getElementById('loadingMessage').textContent = '⚠ Could not load library.';
+                    document.getElementById('loadingMessage').style.color = '#ff6b6b';
+                    document.getElementById('loadingSpinner').style.display = 'none';
                 });
         }
 
