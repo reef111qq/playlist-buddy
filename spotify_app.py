@@ -571,8 +571,26 @@ def chat_api():
 
     user_id = session.get('spotify_user_id', '')
     library_summary = library_cache.get(user_id, '')
+    
+    # If cache was lost (e.g. after redeploy), rebuild it automatically
     if not library_summary:
-        return jsonify({'error': 'Library not loaded yet. Please wait a moment and try again.'}), 400
+        try:
+            sp, sp_oauth, cache_handler = get_spotify()
+            user = sp.current_user()
+            user_id = user['id']
+            
+            liked_songs = fetch_liked_songs(sp, limit=3000)
+            playlists = fetch_playlists(sp)
+            top_artists = fetch_top_artists(sp)
+            top_tracks = fetch_top_tracks(sp)
+            
+            library_summary = summarize_library(liked_songs, playlists, top_artists, top_tracks)
+            library_cache[user_id] = library_summary
+            session['spotify_user_id'] = user_id
+            logger.info(f"Auto-rebuilt library cache for {user_id}")
+        except Exception as e:
+            logger.error(f"Failed to auto-rebuild library: {e}")
+            return jsonify({'error': 'Library not loaded yet. Please refresh the page.'}), 400
 
     data = request.get_json()
     if not data or 'messages' not in data:
