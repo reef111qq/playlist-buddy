@@ -1460,6 +1460,21 @@
         }
 
         // ============ Sending messages ============
+        
+        // When user clicks on the chat bar, transition to chat and show AI greeting
+        inputField.addEventListener('focus', () => {
+            if (!chatStarted && libraryReady) {
+                chatStarted = true;
+                welcomeSection.style.display = 'none';
+                messagesWrapper.classList.add('active');
+
+                // AI opening message
+                const greeting = "Hey there! What kind of playlist are you thinking of?";
+                conversationHistory.push({ role: 'assistant', content: greeting });
+                addMessageToUI('assistant', greeting);
+            }
+        });
+
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1478,7 +1493,7 @@
             const text = inputField.value.trim();
             if (!text || !libraryReady || isWaiting) return;
 
-            // Transition: hide welcome, show chat
+            // In case they somehow send without focusing first
             if (!chatStarted) {
                 chatStarted = true;
                 welcomeSection.style.display = 'none';
