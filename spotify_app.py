@@ -158,7 +158,7 @@ def fetch_playlists(sp):
                     try:
                         tracks_result = sp.playlist_tracks(
                             playlist_id, 
-                            limit=50,
+                            limit=100,
                             fields='items(track(name,artists(name)))'
                         )
                         for t_item in tracks_result.get('items', []):
@@ -281,11 +281,11 @@ def summarize_library(liked_songs, playlists, top_artists, top_tracks):
         # Sort artists by how many songs the user has saved (most → least)
         sorted_artists = sorted(artist_songs.items(), key=lambda x: len(x[1]), reverse=True)
 
-        # Top 25 artists with their actual song names (up to 5 songs each)
+        # Top 40 artists with their actual song names (up to 8 songs each)
         parts.append("Liked songs by artist (most-saved first):")
-        for artist, songs in sorted_artists[:25]:
-            song_list = songs[:5]
-            extra = f" (+{len(songs) - 5} more)" if len(songs) > 5 else ""
+        for artist, songs in sorted_artists[:40]:
+            song_list = songs[:8]
+            extra = f" (+{len(songs) - 8} more)" if len(songs) > 8 else ""
             parts.append(f"  • {artist} ({len(songs)} songs): {', '.join(song_list)}{extra}")
 
     # --- Top artists + genre analysis ---
@@ -313,7 +313,7 @@ def summarize_library(liked_songs, playlists, top_artists, top_tracks):
     # --- Top tracks (what they're playing RIGHT NOW) ---
     if top_tracks:
         parts.append(f"\n=== CURRENTLY MOST-PLAYED TRACKS ===")
-        for t in top_tracks[:15]:
+        for t in top_tracks[:25]:
             parts.append(f"  • \"{t['name']}\" by {t['artist']}")
 
     # --- Playlists with their actual songs ---
@@ -321,12 +321,12 @@ def summarize_library(liked_songs, playlists, top_artists, top_tracks):
         parts.append(f"\n=== PLAYLISTS ({len(playlists)} total) ===")
         # Sort by track count to show the playlists they've invested most in
         sorted_playlists = sorted(playlists, key=lambda p: p['tracks'], reverse=True)
-        for p in sorted_playlists[:15]:
+        for p in sorted_playlists[:20]:
             songs = p.get('songs', [])
             if songs:
-                # Show up to 8 songs per playlist
-                song_strs = [f"{s['name']} – {s['artist']}" for s in songs[:8]]
-                extra = f" (+{len(songs) - 8} more)" if len(songs) > 8 else ""
+                # Show up to 15 songs per playlist
+                song_strs = [f"{s['name']} – {s['artist']}" for s in songs[:15]]
+                extra = f" (+{len(songs) - 15} more)" if len(songs) > 15 else ""
                 parts.append(f"  • \"{p['name']}\" ({p['tracks']} tracks): {', '.join(song_strs)}{extra}")
             else:
                 parts.append(f"  • \"{p['name']}\" — {p['tracks']} tracks")
@@ -530,7 +530,7 @@ def load_library():
     sp, sp_oauth, cache_handler = get_spotify()
 
     # Fetch all data (Phase 1)
-    liked_songs = fetch_liked_songs(sp, limit=1000)
+    liked_songs = fetch_liked_songs(sp, limit=3000)
     playlists = fetch_playlists(sp)
     top_artists = fetch_top_artists(sp)
     top_tracks = fetch_top_tracks(sp)
