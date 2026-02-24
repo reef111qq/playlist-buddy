@@ -29,6 +29,10 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(64))
 
+# Server-side cache for library summaries (too large for session cookies)
+# Key: Spotify user ID, Value: summary string
+library_cache = {}
+
 # Spotify credentials (set these as environment variables on Render)
 CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
 CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
@@ -522,12 +526,19 @@ def load_library():
     if not is_authenticated():
         return jsonify({'error': 'Not authenticated'}), 401
 
-    # Return cached summary if we already built it
-    cached_summary = session.get('library_summary')
-    if cached_summary:
-        return jsonify({'status': 'ready', 'summary_preview': cached_summary[:200] + '...'})
-
     sp, sp_oauth, cache_handler = get_spotify()
+
+    # Get user ID for cache key
+    try:
+        user = sp.current_user()
+        user_id = user['id']
+    except Exception as e:
+        logger.error(f"Could not get user ID: {e}")
+        return jsonify({'error': 'Could not identify user'}), 500
+
+    # Return cached summary if we already built it
+    if user_id in library_cache:
+        return jsonify({'status': 'ready', 'summary_preview': library_cache[user_id][:200] + '...'})
 
     # Fetch all data (Phase 1)
     liked_songs = fetch_liked_songs(sp, limit=3000)
@@ -538,8 +549,9 @@ def load_library():
     # Summarize (Phase 2)
     summary = summarize_library(liked_songs, playlists, top_artists, top_tracks)
 
-    # Cache in session
-    session['library_summary'] = summary
+    # Cache server-side (not in session — too large for cookies)
+    library_cache[user_id] = summary
+    session['spotify_user_id'] = user_id
 
     return jsonify({'status': 'ready', 'summary_preview': summary[:200] + '...'})
 
@@ -557,7 +569,8 @@ def chat_api():
     if not is_authenticated():
         return jsonify({'error': 'Not authenticated'}), 401
 
-    library_summary = session.get('library_summary', '')
+    user_id = session.get('spotify_user_id', '')
+    library_summary = library_cache.get(user_id, '')
     if not library_summary:
         return jsonify({'error': 'Library not loaded yet. Please wait a moment and try again.'}), 400
 
@@ -579,6 +592,9 @@ def chat_api():
 
 @app.route('/logout')
 def logout():
+    user_id = session.get('spotify_user_id', '')
+    if user_id and user_id in library_cache:
+        del library_cache[user_id]
     session.clear()
     return redirect(url_for('home'))
 
