@@ -29,10 +29,36 @@
             font-family: 'DM Sans', sans-serif;
             background: var(--bg);
             color: var(--text);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ============ AMBIENT BACKGROUND ============ */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(80px);
+        }
+        .bg-orb.one {
+            top: -20%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: rgba(29,185,84,0.08);
+        }
+        .bg-orb.two {
+            bottom: -30%;
+            right: -15%;
+            width: 45vw;
+            height: 45vw;
+            background: rgba(29,80,200,0.06);
+        }
+
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
         }
 
         /* ============ HEADER ============ */
@@ -42,8 +68,12 @@
             justify-content: space-between;
             padding: 16px 24px;
             border-bottom: 1px solid var(--border);
-            background: var(--bg-surface);
-            flex-shrink: 0;
+            background: rgba(17,17,23,0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .header-left {
@@ -124,76 +154,75 @@
             border-color: rgba(255,255,255,0.2);
         }
 
-        /* ============ MAIN SCROLLABLE AREA ============ */
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            scroll-behavior: smooth;
+        .how-to-btn {
+            background: var(--green-dim);
+            color: var(--green);
+            border-color: rgba(29,185,84,0.2);
+        }
+        .how-to-btn:hover {
+            background: rgba(29,185,84,0.2);
+            color: var(--green-glow);
+            border-color: rgba(29,185,84,0.3);
         }
 
-        .chat-container::-webkit-scrollbar { width: 6px; }
-        .chat-container::-webkit-scrollbar-track { background: transparent; }
-        .chat-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-
-        /* ============ WELCOME SECTION ============ */
-        .welcome-section {
-            padding: 48px 24px 40px;
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        .welcome-hero {
+        /* ============ HERO SECTION ============ */
+        .hero {
             text-align: center;
-            margin-bottom: 48px;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 80px 24px 32px;
         }
 
-        .welcome-hero h1 {
+        .hero h1 {
             font-family: 'Syne', sans-serif;
-            font-size: clamp(1.6rem, 4vw, 2.2rem);
+            font-size: clamp(1.8rem, 5vw, 3rem);
             font-weight: 800;
-            margin-bottom: 12px;
-            line-height: 1.15;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
         }
 
-        .welcome-hero h1 .accent {
+        .hero h1 .accent {
             background: linear-gradient(135deg, var(--green), #17d9a0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .welcome-hero p {
+        .hero-sub {
+            font-size: 1rem;
             color: var(--text-dim);
-            font-size: 0.95rem;
+            line-height: 1.65;
             max-width: 500px;
             margin: 0 auto;
-            line-height: 1.6;
         }
 
-        .welcome-loading {
+        /* Library loading status inside hero */
+        .library-status {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
-            margin-top: 24px;
+            gap: 12px;
+            margin-top: 28px;
+            min-height: 80px;
         }
 
         .loading-spinner-ring {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             border: 3px solid rgba(29,185,84,0.15);
             border-top-color: var(--green);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .loading-message {
-            font-size: 0.92rem;
+            font-size: 0.88rem;
             color: var(--green);
             min-height: 1.4em;
             animation: messageFade 0.4s ease;
         }
-
         @keyframes messageFade {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
@@ -203,64 +232,53 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            margin-top: 24px;
+            gap: 10px;
             animation: doneIn 0.5s ease-out;
         }
-
-        .loading-done.show {
-            display: flex;
-        }
-
+        .loading-done.show { display: flex; }
         @keyframes doneIn {
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
         }
 
         .done-check {
-            width: 52px;
-            height: 52px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: var(--green);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
+            color: #000;
         }
 
         .done-text {
             font-family: 'Syne', sans-serif;
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--green);
         }
 
-        .done-hint {
-            font-size: 0.84rem;
-            color: var(--text-dim);
+        /* ============ CONTENT SECTIONS ============ */
+        .content-section {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px;
         }
 
-        .spinner {
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(29,185,84,0.3);
-            border-top-color: var(--green);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* --- How It Works --- */
-        .how-it-works {
-            margin-bottom: 56px;
+        /* --- How it works --- */
+        .how-section {
+            padding-top: 56px;
+            padding-bottom: 56px;
         }
 
         .section-title {
             font-family: 'Syne', sans-serif;
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 800;
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 32px;
         }
 
         .steps-row {
@@ -273,47 +291,113 @@
             background: rgba(255,255,255,0.03);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 24px 20px;
+            padding: 28px 22px;
         }
 
         .step-num {
             font-family: 'Syne', sans-serif;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 800;
             background: linear-gradient(135deg, var(--green), rgba(29,185,84,0.2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             line-height: 1;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
         .step-card h3 {
             font-family: 'Syne', sans-serif;
             font-size: 0.95rem;
             font-weight: 700;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .step-card p {
-            font-size: 0.82rem;
+            font-size: 0.84rem;
             color: var(--text-dim);
-            line-height: 1.5;
+            line-height: 1.55;
+        }
+
+        /* --- Problem vs Solution --- */
+        .comparison-section {
+            padding-bottom: 56px;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .comparison-card {
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            border: 1px solid var(--border);
+        }
+        .comparison-card.bad {
+            background: rgba(255,80,80,0.04);
+            border-color: rgba(255,80,80,0.15);
+        }
+        .comparison-card.good {
+            background: rgba(29,185,84,0.04);
+            border-color: rgba(29,185,84,0.15);
+        }
+
+        .section-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .section-label.problem { color: #ff6b6b; }
+        .section-label.solution { color: var(--green); }
+
+        .comparison-card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .comparison-card.bad h3 { color: #ff6b6b; }
+        .comparison-card.good h3 { color: var(--green); }
+
+        .comparison-card p {
+            font-size: 0.88rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        .prompt-example {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.78rem;
+            padding: 14px 18px;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+        .comparison-card.bad .prompt-example {
+            background: rgba(255,80,80,0.06);
+            border: 1px solid rgba(255,80,80,0.12);
+            color: #cc9999;
+        }
+        .comparison-card.good .prompt-example {
+            background: rgba(29,185,84,0.06);
+            border: 1px solid rgba(29,185,84,0.12);
+            color: #a3d9b3;
         }
 
         /* --- Demo Conversations --- */
-        .demos-label {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 8px;
+        .demos-section {
+            padding-bottom: 56px;
         }
 
         .demos-subtitle {
             text-align: center;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             color: var(--text-dim);
+            margin-top: -20px;
             margin-bottom: 32px;
         }
 
@@ -363,7 +447,6 @@
             flex-direction: column;
             gap: 12px;
         }
-
         .demo-messages::-webkit-scrollbar { width: 3px; }
         .demo-messages::-webkit-scrollbar-track { background: transparent; }
         .demo-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
@@ -374,11 +457,8 @@
             opacity: 0;
             transform: translateY(8px);
         }
-        .demo-msg.visible {
-            animation: demoIn 0.35s ease-out forwards;
-        }
+        .demo-msg.visible { animation: demoIn 0.35s ease-out forwards; }
         .demo-msg.user { flex-direction: row-reverse; }
-
         @keyframes demoIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
@@ -460,33 +540,9 @@
             opacity: 0.7;
         }
 
-        /* --- Start chatting CTA --- */
-        .start-cta {
-            text-align: center;
-            padding: 40px 20px 20px;
-        }
-
-        .start-cta p {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            margin-bottom: 4px;
-        }
-
-        .start-arrow {
-            font-size: 1.4rem;
-            color: var(--green);
-            animation: bounceDown 1.5s ease-in-out infinite;
-        }
-
-        @keyframes bounceDown {
-            0%, 100% { transform: translateY(0); opacity: 0.5; }
-            50% { transform: translateY(6px); opacity: 1; }
-        }
-
         /* --- Music Guide --- */
         .guide-section {
-            margin-top: 56px;
-            margin-bottom: 16px;
+            padding-bottom: 56px;
         }
 
         .guide-header {
@@ -499,7 +555,7 @@
             color: var(--text-dim);
             line-height: 1.6;
             max-width: 540px;
-            margin: 0 auto 12px;
+            margin: -16px auto 12px;
         }
 
         .guide-tip {
@@ -512,7 +568,6 @@
             border-radius: 100px;
             margin-top: 8px;
         }
-
         .guide-tip em {
             font-style: italic;
             color: var(--green-glow);
@@ -531,15 +586,9 @@
             padding: 24px 22px;
             transition: border-color 0.2s ease;
         }
+        .guide-card:hover { border-color: rgba(29,185,84,0.2); }
 
-        .guide-card:hover {
-            border-color: rgba(29,185,84,0.2);
-        }
-
-        .guide-icon {
-            font-size: 1.4rem;
-            margin-bottom: 10px;
-        }
+        .guide-icon { font-size: 1.4rem; margin-bottom: 10px; }
 
         .guide-card h3 {
             font-family: 'Syne', sans-serif;
@@ -584,7 +633,6 @@
             white-space: nowrap;
             min-width: 0;
         }
-
         .scale-end.low { text-align: right; }
         .scale-end.high { text-align: left; }
 
@@ -602,65 +650,100 @@
             border-radius: 2px;
             width: 50%;
         }
+        .scale-fill.energy { background: linear-gradient(90deg, #4ade80, #f59e0b); width: 65%; }
+        .scale-fill.temp { background: linear-gradient(90deg, #60a5fa, #f97316); width: 45%; }
+        .scale-fill.space { background: linear-gradient(90deg, #818cf8, #fb923c); width: 55%; }
+        .scale-fill.mood { background: linear-gradient(90deg, #fbbf24, #8b5cf6); width: 40%; }
+        .scale-fill.structure { background: linear-gradient(90deg, #34d399, #ec4899); width: 50%; }
 
-        .scale-fill.energy {
-            background: linear-gradient(90deg, #4ade80, #f59e0b);
-            width: 65%;
-        }
-
-        .scale-fill.temp {
-            background: linear-gradient(90deg, #60a5fa, #f97316);
-            width: 45%;
-        }
-
-        .scale-fill.space {
-            background: linear-gradient(90deg, #818cf8, #fb923c);
-            width: 55%;
-        }
-
-        .scale-fill.mood {
-            background: linear-gradient(90deg, #fbbf24, #8b5cf6);
-            width: 40%;
-        }
-
-        .scale-fill.structure {
-            background: linear-gradient(90deg, #34d399, #ec4899);
-            width: 50%;
-        }
-
-        /* ============ CHAT MESSAGES (live) ============ */
-        .messages-wrapper {
-            max-width: 720px;
-            width: 100%;
+        /* ============ CHAT ZONE — the sticky bottom section ============ */
+        .chat-zone {
+            max-width: 960px;
             margin: 0 auto;
-            padding: 32px 24px;
+            padding: 0 24px 40px;
+        }
+
+        .chat-zone-header {
+            text-align: center;
+            padding: 40px 0 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .chat-zone-header h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .chat-zone-header p {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .chat-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+            min-height: 200px;
+            max-height: 600px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            display: none; /* hidden until user starts chatting */
         }
-        .messages-wrapper.active { display: flex; }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scroll-behavior: smooth;
+        }
+        .chat-messages::-webkit-scrollbar { width: 5px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+        /* Empty state inside chat box */
+        .chat-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            gap: 8px;
+        }
+        .chat-empty .chat-empty-icon {
+            font-size: 2rem;
+            margin-bottom: 4px;
+            opacity: 0.5;
+        }
 
         .message {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             animation: msgIn 0.35s ease-out both;
         }
         @keyframes msgIn {
-            from { opacity: 0; transform: translateY(12px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .message.user { flex-direction: row-reverse; }
 
         .msg-avatar {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             margin-top: 2px;
         }
         .message.assistant .msg-avatar {
@@ -674,9 +757,9 @@
 
         .msg-bubble {
             max-width: 80%;
-            padding: 14px 18px;
-            border-radius: var(--radius);
-            font-size: 0.92rem;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 0.9rem;
             line-height: 1.6;
             white-space: pre-wrap;
             word-wrap: break-word;
@@ -697,19 +780,19 @@
         .prompt-card {
             background: linear-gradient(135deg, rgba(29,185,84,0.08), rgba(29,100,185,0.06));
             border: 1px solid rgba(29,185,84,0.25);
-            border-radius: var(--radius);
-            padding: 24px;
+            border-radius: 14px;
+            padding: 20px;
             margin-top: 8px;
         }
         .prompt-card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .prompt-card-label {
             font-family: 'Space Mono', monospace;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--green);
@@ -720,7 +803,7 @@
             gap: 6px;
             padding: 7px 16px;
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             font-weight: 500;
             color: #000;
             background: var(--green);
@@ -732,7 +815,7 @@
         .copy-btn:hover { background: var(--green-glow); transform: translateY(-1px); }
         .copy-btn.copied { background: #17d9a0; }
         .prompt-card-text {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.7;
             color: var(--text);
         }
@@ -740,21 +823,21 @@
         /* Typing indicator */
         .typing-indicator {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             animation: msgIn 0.35s ease-out both;
         }
         .typing-dots {
             display: flex;
             gap: 5px;
-            padding: 16px 20px;
+            padding: 14px 18px;
             background: var(--bg-bubble-ai);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 14px;
             border-bottom-left-radius: 4px;
         }
         .typing-dots span {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             background: var(--text-dim);
             border-radius: 50%;
             animation: dotBounce 1.4s ease-in-out infinite;
@@ -763,32 +846,28 @@
         .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
         @keyframes dotBounce {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-6px); opacity: 1; }
+            30% { transform: translateY(-5px); opacity: 1; }
         }
 
-        /* ============ INPUT AREA ============ */
-        .input-area {
-            padding: 20px 24px;
-            border-top: 1px solid var(--border);
-            background: var(--bg-surface);
-            flex-shrink: 0;
-        }
-        .input-wrapper {
-            max-width: 720px;
-            margin: 0 auto;
+        /* Chat input bar */
+        .chat-input-bar {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: flex-end;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
         }
+
         .input-field {
             flex: 1;
-            padding: 14px 20px;
+            padding: 12px 18px;
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             color: var(--text);
             background: rgba(255,255,255,0.06);
             border: 1px solid var(--border);
-            border-radius: 24px;
+            border-radius: 20px;
             outline: none;
             resize: none;
             max-height: 120px;
@@ -800,8 +879,8 @@
         .input-field:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .send-btn {
-            width: 46px;
-            height: 46px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: none;
             background: var(--green);
@@ -815,35 +894,30 @@
         }
         .send-btn:hover { background: var(--green-glow); transform: scale(1.05); }
         .send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
-        .send-btn svg { width: 20px; height: 20px; }
+        .send-btn svg { width: 18px; height: 18px; }
 
         .input-hint {
-            max-width: 720px;
-            margin: 8px auto 0;
-            font-size: 0.7rem;
-            color: var(--text-muted);
             text-align: center;
+            padding: 8px 20px 12px;
+            font-size: 0.68rem;
+            color: var(--text-muted);
         }
+
+        /* ============ FOOTER ============ */
+        footer {
+            text-align: center;
+            padding: 40px 24px 32px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        footer a { color: var(--text-dim); text-decoration: none; }
+        footer a:hover { color: var(--text); }
 
         /* ============ HOW TO USE MODAL ============ */
-        .how-to-btn {
-            background: var(--green-dim);
-            color: var(--green);
-            border-color: rgba(29,185,84,0.2);
-        }
-        .how-to-btn:hover {
-            background: rgba(29,185,84,0.2);
-            color: var(--green-glow);
-            border-color: rgba(29,185,84,0.3);
-        }
-
         .howto-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.6);
             backdrop-filter: blur(4px);
             z-index: 1000;
@@ -852,9 +926,7 @@
             padding: 40px 20px;
             overflow-y: auto;
         }
-        .howto-overlay.open {
-            display: flex;
-        }
+        .howto-overlay.open { display: flex; }
 
         .howto-panel {
             background: var(--bg-surface);
@@ -867,12 +939,10 @@
             box-shadow: 0 24px 80px rgba(0,0,0,0.5);
             animation: panelIn 0.3s ease-out;
         }
-
         @keyframes panelIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .howto-panel::-webkit-scrollbar { width: 5px; }
         .howto-panel::-webkit-scrollbar-track { background: transparent; }
         .howto-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
@@ -889,16 +959,13 @@
             border-radius: 20px 20px 0 0;
             z-index: 1;
         }
-
         .howto-top h2 {
             font-family: 'Syne', sans-serif;
             font-size: 1.15rem;
             font-weight: 800;
         }
-
         .howto-close {
-            width: 32px;
-            height: 32px;
+            width: 32px; height: 32px;
             border-radius: 50%;
             border: 1px solid var(--border);
             background: none;
@@ -910,10 +977,7 @@
             justify-content: center;
             transition: all 0.2s ease;
         }
-        .howto-close:hover {
-            background: rgba(255,255,255,0.08);
-            color: var(--text);
-        }
+        .howto-close:hover { background: rgba(255,255,255,0.08); color: var(--text); }
 
         .howto-content {
             padding: 28px;
@@ -921,12 +985,7 @@
             flex-direction: column;
             gap: 28px;
         }
-
-        .howto-block {
-            display: flex;
-            gap: 16px;
-        }
-
+        .howto-block { display: flex; gap: 16px; }
         .howto-num {
             font-family: 'Syne', sans-serif;
             font-size: 1.4rem;
@@ -940,27 +999,23 @@
             width: 28px;
             padding-top: 2px;
         }
-
         .howto-block h3 {
             font-family: 'Syne', sans-serif;
             font-size: 0.95rem;
             font-weight: 700;
             margin-bottom: 6px;
         }
-
         .howto-block p {
             font-size: 0.84rem;
             color: var(--text-dim);
             line-height: 1.6;
         }
-
         .howto-spotify-steps {
             margin-top: 12px;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-
         .spotify-step {
             display: flex;
             gap: 8px;
@@ -968,7 +1023,6 @@
             color: var(--text-dim);
             line-height: 1.55;
         }
-
         .spotify-step-num {
             font-family: 'Space Mono', monospace;
             font-size: 0.75rem;
@@ -976,7 +1030,6 @@
             flex-shrink: 0;
             padding-top: 2px;
         }
-
         .howto-note {
             font-size: 0.82rem;
             line-height: 1.55;
@@ -986,174 +1039,194 @@
             border-radius: 12px;
             padding: 16px 20px;
         }
+        .howto-note strong { color: #fbbf24; }
 
-        .howto-note strong {
-            color: #fbbf24;
+        /* ============ SCROLL ANIMATIONS ============ */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* ============ RESPONSIVE ============ */
         @media (max-width: 700px) {
             .steps-row { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; }
+            .comparison { grid-template-columns: 1fr; }
             .demos-row { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
             .guide-grid { grid-template-columns: 1fr; }
-            .welcome-section { padding: 32px 16px 24px; }
+            .hero { padding: 50px 20px 24px; }
             .header { padding: 12px 16px; }
-            .input-area { padding: 16px; }
-            .msg-bubble { max-width: 88%; padding: 12px 14px; }
+            .chat-zone { padding: 0 16px 32px; }
+            .msg-bubble { max-width: 88%; }
             .user-info span { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <!-- HEADER -->
-    <div class="header">
-        <div class="header-left">
-            <span class="app-name">Playlist Buddy</span>
-            <span class="library-badge loading" id="libraryBadge">Loading library...</span>
-        </div>
-        <div class="header-right">
-            <div class="user-info">
-                {% if avatar %}
-                <img src="{{ avatar }}" alt="{{ username }}" class="user-avatar">
-                {% endif %}
-                <span>{{ username }}</span>
+    <div class="bg-orb one"></div>
+    <div class="bg-orb two"></div>
+
+    <div class="page-wrapper">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <span class="app-name">Playlist Buddy</span>
+                <span class="library-badge loading" id="libraryBadge">Loading library...</span>
             </div>
-            <a href="/logout" class="header-btn">Disconnect</a>
-            <button class="header-btn how-to-btn" onclick="toggleHowTo()">How to Use</button>
-        </div>
-    </div>
-
-    <!-- HOW TO USE MODAL -->
-    <div class="howto-overlay" id="howtoOverlay" onclick="closeHowToOutside(event)">
-        <div class="howto-panel">
-            <div class="howto-top">
-                <h2>How to Use Playlist Buddy</h2>
-                <button class="howto-close" onclick="toggleHowTo()">✕</button>
+            <div class="header-right">
+                <div class="user-info">
+                    {% if avatar %}
+                    <img src="{{ avatar }}" alt="{{ username }}" class="user-avatar">
+                    {% endif %}
+                    <span>{{ username }}</span>
+                </div>
+                <a href="/logout" class="header-btn">Disconnect</a>
+                <button class="header-btn how-to-btn" onclick="toggleHowTo()">How to Use</button>
             </div>
+        </div>
 
-            <div class="howto-content">
-
-                <div class="howto-block">
-                    <div class="howto-num">1</div>
-                    <div>
-                        <h3>Chat with the AI about your playlist idea</h3>
-                        <p>Type what kind of playlist you want in the chat box below. Be as vague or specific as you like — "something for a road trip," "sad songs for a rainy day," or "90s hip-hop with jazzy beats." The AI already has access to your Spotify library, so it knows your taste.</p>
-                    </div>
+        <!-- HOW TO USE MODAL -->
+        <div class="howto-overlay" id="howtoOverlay" onclick="closeHowToOutside(event)">
+            <div class="howto-panel">
+                <div class="howto-top">
+                    <h2>How to Use Playlist Buddy</h2>
+                    <button class="howto-close" onclick="toggleHowTo()">✕</button>
                 </div>
-
-                <div class="howto-block">
-                    <div class="howto-num">2</div>
-                    <div>
-                        <h3>Answer a few quick questions</h3>
-                        <p>The AI will ask 2-3 follow-up questions to dial in the details — things like energy level, mood, whether you want familiar songs or new discoveries. Just answer naturally, like you're texting a friend who knows music.</p>
+                <div class="howto-content">
+                    <div class="howto-block">
+                        <div class="howto-num">1</div>
+                        <div>
+                            <h3>Chat with the AI about your playlist idea</h3>
+                            <p>Type what kind of playlist you want in the chat box below. Be as vague or specific as you like — "something for a road trip," "sad songs for a rainy day," or "90s hip-hop with jazzy beats." The AI already has access to your Spotify library, so it knows your taste.</p>
+                        </div>
                     </div>
-                </div>
-
-                <div class="howto-block">
-                    <div class="howto-num">3</div>
-                    <div>
-                        <h3>Copy your generated prompt</h3>
-                        <p>Once the AI has enough info, it'll create a detailed prompt in a green card with a <strong>Copy</strong> button. Click it — the prompt is now on your clipboard, ready to paste.</p>
+                    <div class="howto-block">
+                        <div class="howto-num">2</div>
+                        <div>
+                            <h3>Answer a few quick questions</h3>
+                            <p>The AI will ask 2-3 follow-up questions to dial in the details — things like energy level, mood, whether you want familiar songs or new discoveries. Just answer naturally, like you're texting a friend who knows music.</p>
+                        </div>
                     </div>
-                </div>
-
-                <div class="howto-block">
-                    <div class="howto-num">4</div>
-                    <div>
-                        <h3>Paste it into Spotify's AI Playlist feature</h3>
-                        <p>Here's where to find it in Spotify:</p>
-                        <div class="howto-spotify-steps">
-                            <div class="spotify-step">
-                                <span class="spotify-step-num">a.</span>
-                                <span>Make sure you have the <strong>latest version</strong> of Spotify installed. Update it in the App Store (iPhone) or Google Play Store (Android). The feature may not appear on older versions.</span>
-                            </div>
-                            <div class="spotify-step">
-                                <span class="spotify-step-num">b.</span>
-                                <span>Open Spotify and tap <strong>"Your Library"</strong> (bottom right).</span>
-                            </div>
-                            <div class="spotify-step">
-                                <span class="spotify-step-num">c.</span>
-                                <span>Tap the <strong>"+"</strong> button at the top to create a new playlist.</span>
-                            </div>
-                            <div class="spotify-step">
-                                <span class="spotify-step-num">d.</span>
-                                <span>Select <strong>"AI Playlist"</strong> (may also appear as "Create with AI" or "Prompted Playlist" depending on your version).</span>
-                            </div>
-                            <div class="spotify-step">
-                                <span class="spotify-step-num">e.</span>
-                                <span><strong>Paste your prompt</strong> into the text box and hit create. Spotify will generate a playlist tailored to exactly what you described.</span>
+                    <div class="howto-block">
+                        <div class="howto-num">3</div>
+                        <div>
+                            <h3>Copy your generated prompt</h3>
+                            <p>Once the AI has enough info, it'll create a detailed prompt in a green card with a <strong>Copy</strong> button. Click it — the prompt is now on your clipboard, ready to paste.</p>
+                        </div>
+                    </div>
+                    <div class="howto-block">
+                        <div class="howto-num">4</div>
+                        <div>
+                            <h3>Paste it into Spotify's AI Playlist feature</h3>
+                            <p>Here's where to find it in Spotify:</p>
+                            <div class="howto-spotify-steps">
+                                <div class="spotify-step">
+                                    <span class="spotify-step-num">a.</span>
+                                    <span>Make sure you have the <strong>latest version</strong> of Spotify installed.</span>
+                                </div>
+                                <div class="spotify-step">
+                                    <span class="spotify-step-num">b.</span>
+                                    <span>Open Spotify and tap <strong>"Your Library"</strong> (bottom right).</span>
+                                </div>
+                                <div class="spotify-step">
+                                    <span class="spotify-step-num">c.</span>
+                                    <span>Tap the <strong>"+"</strong> button at the top to create a new playlist.</span>
+                                </div>
+                                <div class="spotify-step">
+                                    <span class="spotify-step-num">d.</span>
+                                    <span>Select <strong>"AI Playlist"</strong> (may also appear as "Create with AI").</span>
+                                </div>
+                                <div class="spotify-step">
+                                    <span class="spotify-step-num">e.</span>
+                                    <span><strong>Paste your prompt</strong> into the text box and hit create.</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="howto-block">
-                    <div class="howto-num">5</div>
-                    <div>
-                        <h3>Tweak if needed</h3>
-                        <p>Not quite right? Come back to the chat and ask the AI to adjust — "make it more upbeat," "add some 2000s tracks," "remove the R&B." It'll generate an updated prompt you can copy and try again.</p>
+                    <div class="howto-block">
+                        <div class="howto-num">5</div>
+                        <div>
+                            <h3>Tweak if needed</h3>
+                            <p>Not quite right? Come back to the chat and ask the AI to adjust — "make it more upbeat," "add some 2000s tracks," "remove the R&B." It'll generate an updated prompt you can copy and try again.</p>
+                        </div>
+                    </div>
+                    <div class="howto-note">
+                        <strong>⚠️ Important:</strong> Spotify's AI Playlist feature requires the latest Spotify app update. If you don't see the option, update your app and try again.
                     </div>
                 </div>
-
-                <div class="howto-note">
-                    <strong>⚠️ Important:</strong> Spotify's AI Playlist feature requires the latest Spotify app update. If you don't see the option, update your app and try again. The feature is currently available on mobile (iOS and Android) and may be rolling out to desktop.
-                </div>
-
             </div>
         </div>
-    </div>
 
-    <!-- SCROLLABLE CONTENT -->
-    <div class="chat-container" id="chatContainer">
-
-        <!-- ===== WELCOME (shown before user starts chatting) ===== -->
-        <div class="welcome-section" id="welcomeSection">
-
-            <!-- Hero -->
-            <div class="welcome-hero">
-                <h1>Welcome, {{ username }}.<br><span class="accent">Let's build a playlist.</span></h1>
-                <p>Your Spotify library is being scanned. Once ready, describe any playlist and the AI will craft a detailed prompt you can paste into Spotify.</p>
-                <div class="welcome-loading" id="welcomeLoading">
-                    <div class="loading-spinner-ring" id="loadingSpinner"></div>
-                    <div class="loading-message" id="loadingMessage">Scanning your library...</div>
+        <!-- ============ HERO ============ -->
+        <section class="hero">
+            <h1>Welcome, {{ username }}.<br><span class="accent">Let's build a playlist.</span></h1>
+            <p class="hero-sub">Your Spotify library is being scanned. Once ready, describe any playlist idea below and the AI will craft a detailed prompt you can paste into Spotify.</p>
+            <div class="library-status">
+                <div id="welcomeLoading">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+                        <div class="loading-spinner-ring" id="loadingSpinner"></div>
+                        <div class="loading-message" id="loadingMessage">Scanning your library...</div>
+                    </div>
                 </div>
                 <div class="loading-done" id="loadingDone">
                     <div class="done-check">✓</div>
-                    <div class="done-text">You're all set!</div>
-                    <div class="done-hint">Start typing below to build your first playlist</div>
+                    <div class="done-text">Library loaded — start chatting below!</div>
                 </div>
             </div>
+        </section>
 
-            <!-- How it works -->
-            <div class="how-it-works">
-                <div class="section-title">How it works</div>
-                <div class="steps-row">
-                    <div class="step-card">
-                        <div class="step-num">1</div>
-                        <h3>We read your library</h3>
-                        <p>Liked songs, playlists, top artists, and listening patterns — all scanned automatically.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-num">2</div>
-                        <h3>Chat about what you want</h3>
-                        <p>The AI already knows your taste. Describe the vibe — it'll ask smart follow-ups.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-num">3</div>
-                        <h3>Copy your prompt</h3>
-                        <p>Get a detailed, ready-to-paste prompt. Drop it into Spotify's AI playlist feature.</p>
-                    </div>
+        <!-- ============ HOW IT WORKS ============ -->
+        <div class="content-section how-section fade-in">
+            <div class="section-title">How it works</div>
+            <div class="steps-row">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <h3>We read your library</h3>
+                    <p>Liked songs, playlists, top artists, and listening patterns — all scanned automatically.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <h3>Chat about what you want</h3>
+                    <p>The AI already knows your taste. Describe the vibe — it'll ask smart follow-ups.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <h3>Copy your prompt</h3>
+                    <p>Get a detailed, ready-to-paste prompt. Drop it into Spotify's AI playlist feature.</p>
                 </div>
             </div>
+        </div>
 
-            <!-- Demo conversations -->
-            <div class="demos-label">See it in action</div>
+        <!-- ============ PROBLEM vs SOLUTION ============ -->
+        <div class="content-section comparison-section fade-in">
+            <div class="comparison">
+                <div class="comparison-card bad">
+                    <div class="section-label problem">The problem</div>
+                    <h3>Vague prompts get generic playlists</h3>
+                    <p>Most people type something like this and wonder why the result sounds like elevator music:</p>
+                    <div class="prompt-example">"chill vibes for studying"</div>
+                </div>
+                <div class="comparison-card good">
+                    <div class="section-label solution">With Playlist Buddy</div>
+                    <h3>Specific prompts get playlists that hit</h3>
+                    <p>We help you write prompts that reference your actual taste:</p>
+                    <div class="prompt-example">"A boom-bap playlist with 90s-style drums and smooth, soulful vocals. Think Fugees 'Ready or Not' energy — jazzy samples, laid-back flow, with artists like J. Cole, A$AP Rocky, and Joey Bada$$."</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ DEMO CONVERSATIONS ============ -->
+        <div class="content-section demos-section fade-in">
+            <div class="section-title">See it in action</div>
             <div class="demos-subtitle">Two real examples of Playlist Buddy crafting prompts</div>
-
             <div class="demos-row">
-
-                <!-- Demo 1: Hip-Hop / Boom Bap -->
+                <!-- Demo 1 -->
                 <div class="demo-phone">
                     <div class="demo-header">
                         <div class="demo-dot"></div>
@@ -1189,8 +1262,7 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Demo 2: Classic Rock / 80s -->
+                <!-- Demo 2 -->
                 <div class="demo-phone">
                     <div class="demo-header">
                         <div class="demo-dot"></div>
@@ -1207,7 +1279,7 @@
                         </div>
                         <div class="demo-msg ai" data-delay="2000">
                             <div class="demo-avatar">🎵</div>
-                            <div class="demo-bubble">Love it! Should it build in energy or stay high the whole time? And any must-include tracks?</div>
+                            <div class="demo-bubble">Love it! Should it build in energy or stay high the whole time? Any must-include tracks?</div>
                         </div>
                         <div class="demo-msg user" data-delay="2800">
                             <div class="demo-avatar">👤</div>
@@ -1226,124 +1298,124 @@
                         </div>
                     </div>
                 </div>
-
             </div>
-
-            <!-- Music Guide -->
-            <div class="guide-section">
-                <div class="guide-header">
-                    <div class="section-title">Words to describe your sound</div>
-                    <p class="guide-intro">Not sure how to describe the playlist you want? Here are six ways to think about music. Use any of these when chatting — the AI will know exactly what you mean.</p>
-                    <p class="guide-tip">💡 Try asking the AI: <em>"What genre would you call my music?"</em> — it can look at your library and tell you.</p>
-                </div>
-
-                <div class="guide-grid">
-
-                    <div class="guide-card">
-                        <div class="guide-icon">🎸</div>
-                        <h3>Genre</h3>
-                        <p class="guide-desc">The broad category your music falls into. This is the biggest way to separate different types of music.</p>
-                        <div class="guide-examples">
-                            <span class="guide-tag">Hip Hop</span>
-                            <span class="guide-tag">Rock</span>
-                            <span class="guide-tag">Pop</span>
-                            <span class="guide-tag">R&B</span>
-                            <span class="guide-tag">Indie</span>
-                            <span class="guide-tag">Country</span>
-                            <span class="guide-tag">Folk</span>
-                            <span class="guide-tag">Alternative</span>
-                        </div>
-                    </div>
-
-                    <div class="guide-card">
-                        <div class="guide-icon">⚡</div>
-                        <h3>Energy</h3>
-                        <p class="guide-desc">How fast or intense the song feels. Think: is this a "laying on the couch" song or a "running on the treadmill" song?</p>
-                        <div class="guide-scale">
-                            <div class="scale-end low">Chill &amp; Slow</div>
-                            <div class="scale-bar"><div class="scale-fill energy"></div></div>
-                            <div class="scale-end high">Intense &amp; Fast</div>
-                        </div>
-                    </div>
-
-                    <div class="guide-card">
-                        <div class="guide-icon">🌡️</div>
-                        <h3>Temperature</h3>
-                        <p class="guide-desc">Does the song feel "cold" and electronic — like synths and computers? Or "warm" and human — like a live band in a cozy room?</p>
-                        <div class="guide-scale">
-                            <div class="scale-end low">Cold &amp; Electronic</div>
-                            <div class="scale-bar"><div class="scale-fill temp"></div></div>
-                            <div class="scale-end high">Warm &amp; Organic</div>
-                        </div>
-                    </div>
-
-                    <div class="guide-card">
-                        <div class="guide-icon">🌅</div>
-                        <h3>Space</h3>
-                        <p class="guide-desc">Does the song feel huge and echoey — like standing in an open field? Or close and personal — like someone whispering right next to you?</p>
-                        <div class="guide-scale">
-                            <div class="scale-end low">Wide &amp; Echoey</div>
-                            <div class="scale-bar"><div class="scale-fill space"></div></div>
-                            <div class="scale-end high">Close &amp; Intimate</div>
-                        </div>
-                    </div>
-
-                    <div class="guide-card">
-                        <div class="guide-icon">🎨</div>
-                        <h3>Mood</h3>
-                        <p class="guide-desc">Does the song feel bright and uplifting — like sunshine? Or dark and moody — like a rainy night? This is the emotional "color" of the music.</p>
-                        <div class="guide-scale">
-                            <div class="scale-end low">Bright &amp; Uplifting</div>
-                            <div class="scale-bar"><div class="scale-fill mood"></div></div>
-                            <div class="scale-end high">Dark &amp; Moody</div>
-                        </div>
-                    </div>
-
-                    <div class="guide-card">
-                        <div class="guide-icon">🔄</div>
-                        <h3>Structure</h3>
-                        <p class="guide-desc">Does the song ride one repeating groove the whole way through — hypnotic and steady? Or does it build and change — like a story with a beginning, middle, and end?</p>
-                        <div class="guide-scale">
-                            <div class="scale-end low">Steady Loop</div>
-                            <div class="scale-bar"><div class="scale-fill structure"></div></div>
-                            <div class="scale-end high">Builds &amp; Evolves</div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Start chatting nudge -->
-            <div class="start-cta" id="startCta">
-                <p>Your turn — describe any playlist below</p>
-                <div class="start-arrow">↓</div>
-            </div>
-
         </div>
 
-        <!-- ===== LIVE CHAT MESSAGES ===== -->
-        <div class="messages-wrapper" id="messagesWrapper"></div>
-
-    </div>
-
-    <!-- INPUT -->
-    <div class="input-area">
-        <div class="input-wrapper">
-            <textarea
-                id="inputField"
-                class="input-field"
-                placeholder="Describe what playlist you want to create..."
-                rows="1"
-                disabled
-            ></textarea>
-            <button id="sendBtn" class="send-btn" disabled>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-            </button>
+        <!-- ============ MUSIC GUIDE ============ -->
+        <div class="content-section guide-section fade-in">
+            <div class="guide-header">
+                <div class="section-title">Words to describe your sound</div>
+                <p class="guide-intro">Not sure how to describe the playlist you want? Here are six ways to think about music. Use any of these when chatting — the AI will know exactly what you mean.</p>
+                <p class="guide-tip">💡 Try asking the AI: <em>"What genre would you call my music?"</em></p>
+            </div>
+            <div class="guide-grid">
+                <div class="guide-card">
+                    <div class="guide-icon">🎸</div>
+                    <h3>Genre</h3>
+                    <p class="guide-desc">The broad category your music falls into.</p>
+                    <div class="guide-examples">
+                        <span class="guide-tag">Hip Hop</span>
+                        <span class="guide-tag">Rock</span>
+                        <span class="guide-tag">Pop</span>
+                        <span class="guide-tag">R&B</span>
+                        <span class="guide-tag">Indie</span>
+                        <span class="guide-tag">Country</span>
+                        <span class="guide-tag">Folk</span>
+                        <span class="guide-tag">Alternative</span>
+                    </div>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">⚡</div>
+                    <h3>Energy</h3>
+                    <p class="guide-desc">How fast or intense the song feels — couch song or treadmill song?</p>
+                    <div class="guide-scale">
+                        <div class="scale-end low">Chill &amp; Slow</div>
+                        <div class="scale-bar"><div class="scale-fill energy"></div></div>
+                        <div class="scale-end high">Intense &amp; Fast</div>
+                    </div>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">🌡️</div>
+                    <h3>Temperature</h3>
+                    <p class="guide-desc">"Cold" and electronic, or "warm" and human — like a live band in a cozy room?</p>
+                    <div class="guide-scale">
+                        <div class="scale-end low">Cold &amp; Electronic</div>
+                        <div class="scale-bar"><div class="scale-fill temp"></div></div>
+                        <div class="scale-end high">Warm &amp; Organic</div>
+                    </div>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">🌅</div>
+                    <h3>Space</h3>
+                    <p class="guide-desc">Huge and echoey like an open field, or close and personal like a whisper?</p>
+                    <div class="guide-scale">
+                        <div class="scale-end low">Wide &amp; Echoey</div>
+                        <div class="scale-bar"><div class="scale-fill space"></div></div>
+                        <div class="scale-end high">Close &amp; Intimate</div>
+                    </div>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">🎨</div>
+                    <h3>Mood</h3>
+                    <p class="guide-desc">Bright and uplifting like sunshine, or dark and moody like a rainy night?</p>
+                    <div class="guide-scale">
+                        <div class="scale-end low">Bright &amp; Uplifting</div>
+                        <div class="scale-bar"><div class="scale-fill mood"></div></div>
+                        <div class="scale-end high">Dark &amp; Moody</div>
+                    </div>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">🔄</div>
+                    <h3>Structure</h3>
+                    <p class="guide-desc">One repeating groove, or a journey that builds and evolves?</p>
+                    <div class="guide-scale">
+                        <div class="scale-end low">Steady Loop</div>
+                        <div class="scale-bar"><div class="scale-fill structure"></div></div>
+                        <div class="scale-end high">Builds &amp; Evolves</div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="input-hint">Press Enter to send · Shift+Enter for new line</div>
+
+        <!-- ============ CHAT ZONE ============ -->
+        <div class="chat-zone" id="chatZone">
+            <div class="chat-zone-header">
+                <h2>Start building your playlist</h2>
+                <p>Describe what you're in the mood for — the AI knows your library</p>
+            </div>
+
+            <div class="chat-box" id="chatBox">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-empty" id="chatEmpty">
+                        <div class="chat-empty-icon">🎧</div>
+                        <div>Type a message below to get started</div>
+                    </div>
+                </div>
+                <div class="chat-input-bar">
+                    <textarea
+                        id="inputField"
+                        class="input-field"
+                        placeholder="Describe what playlist you want to create..."
+                        rows="1"
+                        disabled
+                    ></textarea>
+                    <button id="sendBtn" class="send-btn" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-hint">Press Enter to send · Shift+Enter for new line</div>
+            </div>
+        </div>
+
+        <footer>
+            Your data stays between you and the app. We never store your Spotify credentials.
+            <br><br>
+            <a href="https://github.com/reef111qq/playlist-buddy">GitHub</a>
+        </footer>
+
     </div>
 
     <script>
@@ -1351,21 +1423,20 @@
         let conversationHistory = [];
         let libraryReady = false;
         let isWaiting = false;
-        let chatStarted = false;
+        let greetingSent = false;
 
         // ============ DOM refs ============
-        const chatContainer = document.getElementById('chatContainer');
-        const messagesWrapper = document.getElementById('messagesWrapper');
-        const welcomeSection = document.getElementById('welcomeSection');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatEmpty = document.getElementById('chatEmpty');
         const inputField = document.getElementById('inputField');
         const sendBtn = document.getElementById('sendBtn');
         const libraryBadge = document.getElementById('libraryBadge');
-        const startCta = document.getElementById('startCta');
 
         // ============ Library loading ============
         window.addEventListener('DOMContentLoaded', () => {
             loadLibrary();
             startDemoAnimations();
+            initScrollAnimations();
         });
 
         // ============ Loading messages ============
@@ -1389,7 +1460,7 @@
             messageInterval = setInterval(() => {
                 messageIndex = (messageIndex + 1) % loadingMessages.length;
                 msgEl.style.animation = 'none';
-                msgEl.offsetHeight; // force reflow
+                msgEl.offsetHeight;
                 msgEl.style.animation = 'messageFade 0.4s ease';
                 msgEl.textContent = loadingMessages[messageIndex];
             }, 4000);
@@ -1400,11 +1471,6 @@
                 clearInterval(messageInterval);
                 messageInterval = null;
             }
-        }
-
-        function showLoadingDone() {
-            document.getElementById('welcomeLoading').style.display = 'none';
-            document.getElementById('loadingDone').classList.add('show');
         }
 
         function loadLibrary() {
@@ -1427,10 +1493,9 @@
                     inputField.disabled = false;
                     sendBtn.disabled = false;
 
-                    showLoadingDone();
-
-                    // Focus input after a brief moment so user sees the done state
-                    setTimeout(() => inputField.focus(), 600);
+                    // Show done state
+                    document.getElementById('welcomeLoading').style.display = 'none';
+                    document.getElementById('loadingDone').classList.add('show');
                 })
                 .catch(err => {
                     console.error('Library load failed:', err);
@@ -1444,19 +1509,46 @@
                 });
         }
 
+        // ============ Scroll animations ============
+        function initScrollAnimations() {
+            const fadeEls = document.querySelectorAll('.fade-in');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+            fadeEls.forEach(el => observer.observe(el));
+        }
+
         // ============ Demo animations ============
         function startDemoAnimations() {
-            ['demo1', 'demo2'].forEach(id => {
-                const container = document.getElementById(id);
-                const msgs = container.querySelectorAll('.demo-msg');
-                msgs.forEach(msg => {
-                    const delay = parseInt(msg.dataset.delay) || 0;
-                    setTimeout(() => {
-                        msg.classList.add('visible');
-                        container.scrollTop = container.scrollHeight;
-                    }, delay);
+            const demoSection = document.querySelector('.demos-section');
+            if (!demoSection) return;
+            let started = false;
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !started) {
+                        started = true;
+                        ['demo1', 'demo2'].forEach(id => {
+                            const container = document.getElementById(id);
+                            if (!container) return;
+                            const msgs = container.querySelectorAll('.demo-msg');
+                            msgs.forEach(msg => {
+                                const delay = parseInt(msg.dataset.delay) || 0;
+                                setTimeout(() => {
+                                    msg.classList.add('visible');
+                                    container.scrollTop = container.scrollHeight;
+                                }, delay);
+                            });
+                        });
+                        obs.unobserve(entry.target);
+                    }
                 });
-            });
+            }, { threshold: 0.3 });
+            obs.observe(demoSection);
         }
 
         // ============ Sending messages ============
@@ -1478,11 +1570,13 @@
             const text = inputField.value.trim();
             if (!text || !libraryReady || isWaiting) return;
 
-            // Transition: hide welcome, show chat
-            if (!chatStarted) {
-                chatStarted = true;
-                welcomeSection.style.display = 'none';
-                messagesWrapper.classList.add('active');
+            // First message: hide empty state and send AI greeting first
+            if (!greetingSent) {
+                greetingSent = true;
+                chatEmpty.style.display = 'none';
+                const greeting = "Hey there! What kind of playlist are you thinking of?";
+                conversationHistory.push({ role: 'assistant', content: greeting });
+                addMessageToUI('assistant', greeting);
             }
 
             addMessageToUI('user', text);
@@ -1578,8 +1672,8 @@
 
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(bubble);
-            messagesWrapper.appendChild(messageDiv);
-            scrollToBottom();
+            chatMessages.appendChild(messageDiv);
+            scrollChatToBottom();
         }
 
         function showTyping() {
@@ -1590,8 +1684,8 @@
                 <div class="msg-avatar" style="background:var(--green-dim);border:1px solid rgba(29,185,84,0.2);">🎵</div>
                 <div class="typing-dots"><span></span><span></span><span></span></div>
             `;
-            messagesWrapper.appendChild(typing);
-            scrollToBottom();
+            chatMessages.appendChild(typing);
+            scrollChatToBottom();
         }
 
         function hideTyping() {
@@ -1599,9 +1693,9 @@
             if (el) el.remove();
         }
 
-        function scrollToBottom() {
+        function scrollChatToBottom() {
             requestAnimationFrame(() => {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             });
         }
 
@@ -1635,23 +1729,17 @@
 
         // ============ How to Use modal ============
         function toggleHowTo() {
-            const overlay = document.getElementById('howtoOverlay');
-            overlay.classList.toggle('open');
+            document.getElementById('howtoOverlay').classList.toggle('open');
         }
 
         function closeHowToOutside(e) {
-            if (e.target === e.currentTarget) {
-                toggleHowTo();
-            }
+            if (e.target === e.currentTarget) toggleHowTo();
         }
 
-        // Close with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 const overlay = document.getElementById('howtoOverlay');
-                if (overlay.classList.contains('open')) {
-                    toggleHowTo();
-                }
+                if (overlay.classList.contains('open')) toggleHowTo();
             }
         });
     </script>
