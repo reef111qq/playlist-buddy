@@ -469,18 +469,32 @@
         .start-cta p {
             font-size: 0.9rem;
             color: var(--text-dim);
-            margin-bottom: 4px;
+            margin-bottom: 16px;
         }
 
-        .start-arrow {
-            font-size: 1.4rem;
-            color: var(--green);
-            animation: bounceDown 1.5s ease-in-out infinite;
+        .start-chat-btn {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #000;
+            background: var(--green);
+            border: none;
+            padding: 14px 36px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 30px rgba(29,185,84,0.2);
         }
-
-        @keyframes bounceDown {
-            0%, 100% { transform: translateY(0); opacity: 0.5; }
-            50% { transform: translateY(6px); opacity: 1; }
+        .start-chat-btn:hover:not(:disabled) {
+            background: var(--green-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(29,185,84,0.35);
+        }
+        .start-chat-btn:disabled {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
         /* --- Music Guide --- */
@@ -1021,6 +1035,7 @@
             </div>
             <a href="/logout" class="header-btn">Disconnect</a>
             <button class="header-btn how-to-btn" onclick="toggleHowTo()">How to Use</button>
+            <button class="header-btn" onclick="goBack()" title="Back to home">✕</button>
         </div>
     </div>
 
@@ -1316,7 +1331,7 @@
             <!-- Start chatting nudge -->
             <div class="start-cta" id="startCta">
                 <p>Your turn — describe any playlist below</p>
-                <div class="start-arrow">↓</div>
+                <button class="start-chat-btn" id="startChatBtn" onclick="startChat()" disabled>Start Chatting ↓</button>
             </div>
 
         </div>
@@ -1353,6 +1368,9 @@
         let isWaiting = false;
         let chatStarted = false;
 
+        // Session storage key for persisting chat history
+        const HISTORY_KEY = 'playlist_buddy_history';
+
         // ============ DOM refs ============
         const chatContainer = document.getElementById('chatContainer');
         const messagesWrapper = document.getElementById('messagesWrapper');
@@ -1362,11 +1380,58 @@
         const libraryBadge = document.getElementById('libraryBadge');
         const startCta = document.getElementById('startCta');
 
-        // ============ Library loading ============
+        // ============ Restore saved chat on page load ============
         window.addEventListener('DOMContentLoaded', () => {
+            const saved = sessionStorage.getItem(HISTORY_KEY);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && parsed.length > 0) {
+                        conversationHistory = parsed;
+                        // Re-render all saved messages into the UI
+                        conversationHistory.forEach(msg => {
+                            if (msg.role === 'user' || msg.role === 'assistant') {
+                                addMessageToUI(msg.role, msg.content);
+                            }
+                        });
+                        // Switch to chat view since there's history
+                        chatStarted = true;
+                        welcomeSection.style.display = 'none';
+                        messagesWrapper.classList.add('active');
+                    }
+                } catch(e) { /* ignore corrupt storage */ }
+            }
             loadLibrary();
             startDemoAnimations();
         });
+
+        // ============ Go back to home (saves chat state) ============
+        function goBack() {
+            // Chat history is already in sessionStorage, nothing extra needed.
+            // Just navigate back to home — the session on the server keeps
+            // the library cached so it won't need to reload.
+            window.location.href = '/';
+        }
+
+        // ============ Start chat button ============
+        function startChat() {
+            if (!libraryReady) return;
+            chatStarted = true;
+            welcomeSection.style.display = 'none';
+            messagesWrapper.classList.add('active');
+
+            // Only show greeting if no saved history
+            if (conversationHistory.length === 0) {
+                const greeting = "Hey there! What kind of playlist are you thinking of?";
+                conversationHistory.push({ role: 'assistant', content: greeting });
+                addMessageToUI('assistant', greeting);
+                saveHistory();
+            }
+
+            inputField.focus();
+        }
+
+        // ============ Library loading ============
 
         // ============ Loading messages ============
         const loadingMessages = [
@@ -1427,10 +1492,17 @@
                     inputField.disabled = false;
                     sendBtn.disabled = false;
 
+                    // Enable the Start Chatting button
+                    const startBtn = document.getElementById('startChatBtn');
+                    if (startBtn) startBtn.disabled = false;
+
                     showLoadingDone();
 
-                    // Focus input after a brief moment so user sees the done state
-                    setTimeout(() => inputField.focus(), 600);
+                    // If returning to the welcome screen (chat was started before),
+                    // don't auto-focus — let the user click Start Chatting
+                    if (!chatStarted) {
+                        // Subtle scroll hint only
+                    }
                 })
                 .catch(err => {
                     console.error('Library load failed:', err);
@@ -1460,20 +1532,6 @@
         }
 
         // ============ Sending messages ============
-        
-        // When user clicks on the chat bar, transition to chat and show AI greeting
-        inputField.addEventListener('focus', () => {
-            if (!chatStarted && libraryReady) {
-                chatStarted = true;
-                welcomeSection.style.display = 'none';
-                messagesWrapper.classList.add('active');
-
-                // AI opening message
-                const greeting = "Hey there! What kind of playlist are you thinking of?";
-                conversationHistory.push({ role: 'assistant', content: greeting });
-                addMessageToUI('assistant', greeting);
-            }
-        });
 
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -1493,7 +1551,7 @@
             const text = inputField.value.trim();
             if (!text || !libraryReady || isWaiting) return;
 
-            // In case they somehow send without focusing first
+            // Safety: if they type directly without clicking Start Chatting
             if (!chatStarted) {
                 chatStarted = true;
                 welcomeSection.style.display = 'none';
@@ -1502,6 +1560,7 @@
 
             addMessageToUI('user', text);
             conversationHistory.push({ role: 'user', content: text });
+            saveHistory();
 
             inputField.value = '';
             inputField.style.height = 'auto';
@@ -1528,6 +1587,7 @@
                 } else {
                     conversationHistory.push({ role: 'assistant', content: data.response });
                     addMessageToUI('assistant', data.response);
+                    saveHistory();
                 }
             })
             .catch(err => {
@@ -1540,6 +1600,13 @@
                 sendBtn.disabled = false;
                 inputField.focus();
             });
+        }
+
+        // ============ Save/clear history ============
+        function saveHistory() {
+            try {
+                sessionStorage.setItem(HISTORY_KEY, JSON.stringify(conversationHistory));
+            } catch(e) { /* ignore */ }
         }
 
         // ============ UI helpers ============
