@@ -21,6 +21,9 @@
             --text-dim: #8a8680;
             --text-muted: #5a5854;
             --radius: 16px;
+            --purple: #8b5cf6;
+            --purple-glow: #a78bfa;
+            --purple-dim: rgba(139,92,246,0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,1023 +37,383 @@
         }
 
         /* ============ AMBIENT BACKGROUND ============ */
-        .bg-orb {
-            position: fixed;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            filter: blur(80px);
-        }
-        .bg-orb.one {
-            top: -20%;
-            left: -10%;
-            width: 50vw;
-            height: 50vw;
-            background: rgba(29,185,84,0.08);
-        }
-        .bg-orb.two {
-            bottom: -30%;
-            right: -15%;
-            width: 45vw;
-            height: 45vw;
-            background: rgba(29,80,200,0.06);
-        }
-
-        .page-wrapper {
-            position: relative;
-            z-index: 1;
-        }
+        .bg-orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(80px); }
+        .bg-orb.one { top: -20%; left: -10%; width: 50vw; height: 50vw; background: rgba(29,185,84,0.08); }
+        .bg-orb.two { bottom: -30%; right: -15%; width: 45vw; height: 45vw; background: rgba(29,80,200,0.06); }
+        .page-wrapper { position: relative; z-index: 1; }
 
         /* ============ HEADER ============ */
         .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border);
-            background: rgba(17,17,23,0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px; border-bottom: 1px solid var(--border);
+            background: rgba(17,17,23,0.85); backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100;
         }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
+        .header-left { display: flex; align-items: center; gap: 14px; }
         .app-name {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: 1.1rem;
+            font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem;
             background: linear-gradient(135deg, var(--green), #17d9a0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
         .library-badge {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            padding: 4px 10px;
-            border-radius: 100px;
-            background: var(--green-dim);
-            color: var(--green);
-            border: 1px solid rgba(29,185,84,0.2);
+            font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.05em;
+            text-transform: uppercase; padding: 4px 10px; border-radius: 100px;
+            background: var(--green-dim); color: var(--green); border: 1px solid rgba(29,185,84,0.2);
             transition: all 0.3s ease;
         }
-        .library-badge.loading {
-            color: var(--text-dim);
-            background: rgba(255,255,255,0.05);
-            border-color: var(--border);
-        }
-        .library-badge.error {
-            color: #ff6b6b;
-            background: rgba(255,80,80,0.1);
-            border-color: rgba(255,80,80,0.2);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--text-dim);
-        }
-
-        .user-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: rgba(255,255,255,0.1);
-        }
-
+        .library-badge.loading { color: var(--text-dim); background: rgba(255,255,255,0.05); border-color: var(--border); }
+        .library-badge.error { color: #ff6b6b; background: rgba(255,80,80,0.1); border-color: rgba(255,80,80,0.2); }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .user-info { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-dim); }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,0.1); }
         .header-btn {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.78rem;
-            color: var(--text-dim);
-            background: none;
-            border: 1px solid var(--border);
-            padding: 6px 14px;
-            border-radius: 100px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s ease;
+            font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: var(--text-dim);
+            background: none; border: 1px solid var(--border); padding: 6px 14px;
+            border-radius: 100px; cursor: pointer; text-decoration: none; transition: all 0.2s ease;
         }
-        .header-btn:hover {
-            color: var(--text);
-            border-color: rgba(255,255,255,0.2);
-        }
+        .header-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+        .how-to-btn { background: var(--green-dim); color: var(--green); border-color: rgba(29,185,84,0.2); }
+        .how-to-btn:hover { background: rgba(29,185,84,0.2); color: var(--green-glow); border-color: rgba(29,185,84,0.3); }
 
-        .how-to-btn {
-            background: var(--green-dim);
-            color: var(--green);
-            border-color: rgba(29,185,84,0.2);
-        }
-        .how-to-btn:hover {
-            background: rgba(29,185,84,0.2);
-            color: var(--green-glow);
-            border-color: rgba(29,185,84,0.3);
-        }
-
-        /* ============ HERO SECTION ============ */
-        .hero {
-            text-align: center;
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 80px 24px 32px;
-        }
-
+        /* ============ HERO ============ */
+        .hero { text-align: center; max-width: 700px; margin: 0 auto; padding: 80px 24px 32px; }
         .hero h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: clamp(1.8rem, 5vw, 3rem);
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -0.03em;
-            margin-bottom: 16px;
+            font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800;
+            line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 16px;
         }
-
         .hero h1 .accent {
             background: linear-gradient(135deg, var(--green), #17d9a0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
-        .hero-sub {
-            font-size: 1rem;
-            color: var(--text-dim);
-            line-height: 1.65;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        /* Library loading status inside hero */
-        .library-status {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            margin-top: 28px;
-            min-height: 80px;
-        }
-
+        .hero-sub { font-size: 1rem; color: var(--text-dim); line-height: 1.65; max-width: 500px; margin: 0 auto; }
+        .library-status { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 28px; min-height: 80px; }
         .loading-spinner-ring {
-            width: 44px;
-            height: 44px;
-            border: 3px solid rgba(29,185,84,0.15);
-            border-top-color: var(--green);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            width: 44px; height: 44px; border: 3px solid rgba(29,185,84,0.15);
+            border-top-color: var(--green); border-radius: 50%; animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .loading-message {
-            font-size: 0.88rem;
-            color: var(--green);
-            min-height: 1.4em;
-            animation: messageFade 0.4s ease;
-        }
-        @keyframes messageFade {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .loading-done {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            animation: doneIn 0.5s ease-out;
-        }
+        .loading-message { font-size: 0.88rem; color: var(--green); min-height: 1.4em; animation: messageFade 0.4s ease; }
+        @keyframes messageFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .loading-done { display: none; flex-direction: column; align-items: center; gap: 10px; animation: doneIn 0.5s ease-out; }
         .loading-done.show { display: flex; }
-        @keyframes doneIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes doneIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .done-check { width: 48px; height: 48px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #000; }
+        .done-text { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; color: var(--green); }
 
-        .done-check {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: var(--green);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            color: #000;
+        /* ============ MODE SWITCHER ============ */
+        .mode-switcher {
+            display: flex; justify-content: center; gap: 4px; margin: 32px auto 0;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 14px; padding: 4px; max-width: 460px;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
         }
-
-        .done-text {
-            font-family: 'Syne', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--green);
+        .mode-switcher.visible { opacity: 1; pointer-events: auto; }
+        .mode-tab {
+            flex: 1; padding: 12px 20px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+            font-weight: 600; color: var(--text-dim); background: none; border: none;
+            border-radius: 10px; cursor: pointer; transition: all 0.25s ease;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .mode-tab:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+        .mode-tab.active-prompt { color: #000; background: var(--green); box-shadow: 0 2px 12px rgba(29,185,84,0.25); }
+        .mode-tab.active-creator { color: #fff; background: var(--purple); box-shadow: 0 2px 12px rgba(139,92,246,0.25); }
+        .mode-tab .mode-icon { font-size: 1rem; }
+        .mode-description {
+            text-align: center; max-width: 500px; margin: 16px auto 0; font-size: 0.84rem;
+            color: var(--text-muted); line-height: 1.5; min-height: 42px;
         }
 
         /* ============ CONTENT SECTIONS ============ */
-        .content-section {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        /* --- How it works --- */
-        .how-section {
-            padding-top: 56px;
-            padding-bottom: 56px;
-        }
-
-        .section-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .steps-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-        }
-
-        .step-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 28px 22px;
-        }
-
+        .content-section { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+        .how-section { padding-top: 56px; padding-bottom: 56px; }
+        .section-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; text-align: center; margin-bottom: 32px; }
+        .steps-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .step-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 22px; }
         .step-num {
-            font-family: 'Syne', sans-serif;
-            font-size: 2.2rem;
-            font-weight: 800;
+            font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800;
             background: linear-gradient(135deg, var(--green), rgba(29,185,84,0.2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1;
-            margin-bottom: 14px;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            line-height: 1; margin-bottom: 14px;
         }
+        .step-card h3 { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+        .step-card p { font-size: 0.84rem; color: var(--text-dim); line-height: 1.55; }
 
-        .step-card h3 {
-            font-family: 'Syne', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .step-card p {
-            font-size: 0.84rem;
-            color: var(--text-dim);
-            line-height: 1.55;
-        }
-
-        /* --- Problem vs Solution --- */
-        .comparison-section {
-            padding-bottom: 56px;
-        }
-
-        .comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        .comparison-card {
-            border-radius: var(--radius);
-            padding: 28px 24px;
-            border: 1px solid var(--border);
-        }
-        .comparison-card.bad {
-            background: rgba(255,80,80,0.04);
-            border-color: rgba(255,80,80,0.15);
-        }
-        .comparison-card.good {
-            background: rgba(29,185,84,0.04);
-            border-color: rgba(29,185,84,0.15);
-        }
-
-        .section-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
+        .comparison-section { padding-bottom: 56px; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .comparison-card { border-radius: var(--radius); padding: 28px 24px; border: 1px solid var(--border); }
+        .comparison-card.bad { background: rgba(255,80,80,0.04); border-color: rgba(255,80,80,0.15); }
+        .comparison-card.good { background: rgba(29,185,84,0.04); border-color: rgba(29,185,84,0.15); }
+        .section-label { font-family: 'Space Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; }
         .section-label.problem { color: #ff6b6b; }
         .section-label.solution { color: var(--green); }
-
-        .comparison-card h3 {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
+        .comparison-card h3 { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; }
         .comparison-card.bad h3 { color: #ff6b6b; }
         .comparison-card.good h3 { color: var(--green); }
+        .comparison-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 14px; }
+        .prompt-example { font-family: 'Space Mono', monospace; font-size: 0.78rem; padding: 14px 18px; border-radius: 10px; line-height: 1.6; }
+        .comparison-card.bad .prompt-example { background: rgba(255,80,80,0.06); border: 1px solid rgba(255,80,80,0.12); color: #cc9999; }
+        .comparison-card.good .prompt-example { background: rgba(29,185,84,0.06); border: 1px solid rgba(29,185,84,0.12); color: #a3d9b3; }
 
-        .comparison-card p {
-            font-size: 0.88rem;
-            color: var(--text-dim);
-            line-height: 1.6;
-            margin-bottom: 14px;
-        }
-
-        .prompt-example {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.78rem;
-            padding: 14px 18px;
-            border-radius: 10px;
-            line-height: 1.6;
-        }
-        .comparison-card.bad .prompt-example {
-            background: rgba(255,80,80,0.06);
-            border: 1px solid rgba(255,80,80,0.12);
-            color: #cc9999;
-        }
-        .comparison-card.good .prompt-example {
-            background: rgba(29,185,84,0.06);
-            border: 1px solid rgba(29,185,84,0.12);
-            color: #a3d9b3;
-        }
-
-        /* --- Demo Conversations --- */
-        .demos-section {
-            padding-bottom: 56px;
-        }
-
-        .demos-subtitle {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            margin-top: -20px;
-            margin-bottom: 32px;
-        }
-
-        .demos-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .demo-phone {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 12px 48px rgba(0,0,0,0.3);
-        }
-
-        .demo-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
-            background: rgba(255,255,255,0.02);
-        }
-
-        .demo-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--green);
-        }
-
-        .demo-header-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--text-dim);
-        }
-
-        .demo-messages {
-            padding: 16px;
-            max-height: 420px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        /* Demos */
+        .demos-section { padding-bottom: 56px; }
+        .demos-subtitle { text-align: center; font-size: 0.9rem; color: var(--text-dim); margin-top: -20px; margin-bottom: 32px; }
+        .demos-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .demo-phone { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); }
+        .demo-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+        .demo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+        .demo-header-label { font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+        .demo-messages { padding: 16px; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         .demo-messages::-webkit-scrollbar { width: 3px; }
-        .demo-messages::-webkit-scrollbar-track { background: transparent; }
         .demo-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
-
-        .demo-msg {
-            display: flex;
-            gap: 8px;
-            opacity: 0;
-            transform: translateY(8px);
-        }
+        .demo-msg { display: flex; gap: 8px; opacity: 0; transform: translateY(8px); }
         .demo-msg.visible { animation: demoIn 0.35s ease-out forwards; }
         .demo-msg.user { flex-direction: row-reverse; }
-        @keyframes demoIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes demoIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .demo-avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; margin-top: 2px; }
+        .demo-msg.ai .demo-avatar { background: var(--green-dim); border: 1px solid rgba(29,185,84,0.2); }
+        .demo-msg.user .demo-avatar { background: rgba(255,255,255,0.08); border: 1px solid var(--border); }
+        .demo-bubble { max-width: 84%; padding: 10px 14px; border-radius: 12px; font-size: 0.78rem; line-height: 1.5; }
+        .demo-msg.ai .demo-bubble { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        .demo-msg.user .demo-bubble { background: var(--bg-bubble-user); border: 1px solid rgba(29,185,84,0.15); border-bottom-right-radius: 4px; color: #d4f5e0; }
+        .demo-prompt-card { background: linear-gradient(135deg, rgba(29,185,84,0.08), rgba(29,100,185,0.06)); border: 1px solid rgba(29,185,84,0.25); border-radius: 10px; padding: 12px; margin-top: 8px; }
+        .demo-prompt-label { font-family: 'Space Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); margin-bottom: 8px; }
+        .demo-prompt-text { font-size: 0.76rem; line-height: 1.55; color: var(--text); }
+        .demo-copy-btn { display: inline-flex; align-items: center; gap: 4px; margin-top: 10px; padding: 5px 12px; font-family: 'DM Sans', sans-serif; font-size: 0.68rem; font-weight: 600; color: #000; background: var(--green); border: none; border-radius: 100px; cursor: default; opacity: 0.7; }
 
-        .demo-avatar {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-        .demo-msg.ai .demo-avatar {
-            background: var(--green-dim);
-            border: 1px solid rgba(29,185,84,0.2);
-        }
-        .demo-msg.user .demo-avatar {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid var(--border);
-        }
-
-        .demo-bubble {
-            max-width: 84%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 0.78rem;
-            line-height: 1.5;
-        }
-        .demo-msg.ai .demo-bubble {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            border-bottom-left-radius: 4px;
-        }
-        .demo-msg.user .demo-bubble {
-            background: var(--bg-bubble-user);
-            border: 1px solid rgba(29,185,84,0.15);
-            border-bottom-right-radius: 4px;
-            color: #d4f5e0;
-        }
-
-        .demo-prompt-card {
-            background: linear-gradient(135deg, rgba(29,185,84,0.08), rgba(29,100,185,0.06));
-            border: 1px solid rgba(29,185,84,0.25);
-            border-radius: 10px;
-            padding: 12px;
-            margin-top: 8px;
-        }
-        .demo-prompt-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.6rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--green);
-            margin-bottom: 8px;
-        }
-        .demo-prompt-text {
-            font-size: 0.76rem;
-            line-height: 1.55;
-            color: var(--text);
-        }
-        .demo-copy-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 10px;
-            padding: 5px 12px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.68rem;
-            font-weight: 600;
-            color: #000;
-            background: var(--green);
-            border: none;
-            border-radius: 100px;
-            cursor: default;
-            opacity: 0.7;
-        }
-
-        /* --- Music Guide --- */
-        .guide-section {
-            padding-bottom: 56px;
-        }
-
-        .guide-header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .guide-intro {
-            font-size: 0.88rem;
-            color: var(--text-dim);
-            line-height: 1.6;
-            max-width: 540px;
-            margin: -16px auto 12px;
-        }
-
-        .guide-tip {
-            font-size: 0.82rem;
-            color: var(--green);
-            background: rgba(29,185,84,0.06);
-            border: 1px solid rgba(29,185,84,0.15);
-            display: inline-block;
-            padding: 8px 18px;
-            border-radius: 100px;
-            margin-top: 8px;
-        }
-        .guide-tip em {
-            font-style: italic;
-            color: var(--green-glow);
-        }
-
-        .guide-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-
-        .guide-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px 22px;
-            transition: border-color 0.2s ease;
-        }
+        /* Guide */
+        .guide-section { padding-bottom: 56px; }
+        .guide-header { text-align: center; margin-bottom: 32px; }
+        .guide-intro { font-size: 0.88rem; color: var(--text-dim); line-height: 1.6; max-width: 540px; margin: -16px auto 12px; }
+        .guide-tip { font-size: 0.82rem; color: var(--green); background: rgba(29,185,84,0.06); border: 1px solid rgba(29,185,84,0.15); display: inline-block; padding: 8px 18px; border-radius: 100px; margin-top: 8px; }
+        .guide-tip em { font-style: italic; color: var(--green-glow); }
+        .guide-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .guide-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 22px; transition: border-color 0.2s ease; }
         .guide-card:hover { border-color: rgba(29,185,84,0.2); }
-
         .guide-icon { font-size: 1.4rem; margin-bottom: 10px; }
-
-        .guide-card h3 {
-            font-family: 'Syne', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .guide-desc {
-            font-size: 0.82rem;
-            color: var(--text-dim);
-            line-height: 1.55;
-            margin-bottom: 14px;
-        }
-
-        .guide-examples {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .guide-tag {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.68rem;
-            padding: 4px 12px;
-            border-radius: 100px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-        }
-
-        .guide-scale {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .scale-end {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.62rem;
-            color: var(--text-muted);
-            white-space: nowrap;
-            min-width: 0;
-        }
-        .scale-end.low { text-align: right; }
-        .scale-end.high { text-align: left; }
-
-        .scale-bar {
-            flex: 1;
-            height: 4px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 2px;
-            overflow: hidden;
-            min-width: 60px;
-        }
-
-        .scale-fill {
-            height: 100%;
-            border-radius: 2px;
-            width: 50%;
-        }
+        .guide-card h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .guide-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.55; margin-bottom: 14px; }
+        .guide-examples { display: flex; flex-wrap: wrap; gap: 6px; }
+        .guide-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; padding: 4px 12px; border-radius: 100px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-dim); }
+        .guide-scale { display: flex; align-items: center; gap: 10px; }
+        .scale-end { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--text-muted); white-space: nowrap; }
+        .scale-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; min-width: 60px; }
+        .scale-fill { height: 100%; border-radius: 2px; }
         .scale-fill.energy { background: linear-gradient(90deg, #4ade80, #f59e0b); width: 65%; }
         .scale-fill.temp { background: linear-gradient(90deg, #60a5fa, #f97316); width: 45%; }
         .scale-fill.space { background: linear-gradient(90deg, #818cf8, #fb923c); width: 55%; }
         .scale-fill.mood { background: linear-gradient(90deg, #fbbf24, #8b5cf6); width: 40%; }
         .scale-fill.structure { background: linear-gradient(90deg, #34d399, #ec4899); width: 50%; }
 
-        /* ============ CHAT ZONE — the sticky bottom section ============ */
-        .chat-zone {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 0 24px 40px;
-        }
-
-        .chat-zone-header {
-            text-align: center;
-            padding: 40px 0 24px;
-            border-top: 1px solid var(--border);
-        }
-
-        .chat-zone-header h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .chat-zone-header p {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-        }
+        /* ============ CHAT ZONE ============ */
+        .chat-zone { max-width: 960px; margin: 0 auto; padding: 0 24px 40px; }
+        .chat-zone-header { text-align: center; padding: 40px 0 24px; border-top: 1px solid var(--border); }
+        .chat-zone-header h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+        .chat-zone-header p { font-size: 0.9rem; color: var(--text-dim); }
 
         .chat-box {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
-            min-height: 200px;
-            max-height: 600px;
-            display: flex;
-            flex-direction: column;
+            background: var(--bg-surface); border: 1px solid var(--border); border-radius: 20px;
+            overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+            min-height: 200px; max-height: 600px; display: flex; flex-direction: column;
+            transition: border-color 0.3s ease;
         }
+        .chat-box.creator-active { border-color: rgba(139,92,246,0.25); }
+
+        /* Mode bar at top of chat */
+        .chat-mode-bar {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 8px 16px; font-family: 'Space Mono', monospace; font-size: 0.65rem;
+            letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        .chat-mode-bar.prompt-mode { color: var(--green); background: rgba(29,185,84,0.04); }
+        .chat-mode-bar.creator-mode { color: var(--purple); background: rgba(139,92,246,0.04); }
+        .chat-mode-bar .mode-dot { width: 6px; height: 6px; border-radius: 50%; transition: background 0.3s ease; }
+        .chat-mode-bar.prompt-mode .mode-dot { background: var(--green); }
+        .chat-mode-bar.creator-mode .mode-dot { background: var(--purple); }
 
         .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            scroll-behavior: smooth;
+            flex: 1; overflow-y: auto; padding: 24px; display: flex;
+            flex-direction: column; gap: 16px; scroll-behavior: smooth;
         }
         .chat-messages::-webkit-scrollbar { width: 5px; }
-        .chat-messages::-webkit-scrollbar-track { background: transparent; }
         .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
-
-        /* Empty state inside chat box */
         .chat-empty {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 48px 20px;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.88rem;
-            gap: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 48px 20px; text-align: center; color: var(--text-muted); font-size: 0.88rem; gap: 8px;
         }
-        .chat-empty .chat-empty-icon {
-            font-size: 2rem;
-            margin-bottom: 4px;
-            opacity: 0.5;
-        }
+        .chat-empty .chat-empty-icon { font-size: 2rem; margin-bottom: 4px; opacity: 0.5; }
 
-        .message {
-            display: flex;
-            gap: 10px;
-            animation: msgIn 0.35s ease-out both;
-        }
-        @keyframes msgIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .message { display: flex; gap: 10px; animation: msgIn 0.35s ease-out both; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .message.user { flex-direction: row-reverse; }
-
         .msg-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            margin-top: 2px;
+            width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-top: 2px;
         }
-        .message.assistant .msg-avatar {
-            background: var(--green-dim);
-            border: 1px solid rgba(29,185,84,0.2);
-        }
-        .message.user .msg-avatar {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid var(--border);
-        }
-
+        .message.assistant .msg-avatar { background: var(--green-dim); border: 1px solid rgba(29,185,84,0.2); }
+        .message.assistant.creator-msg .msg-avatar { background: var(--purple-dim); border: 1px solid rgba(139,92,246,0.2); }
+        .message.user .msg-avatar { background: rgba(255,255,255,0.08); border: 1px solid var(--border); }
         .msg-bubble {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            max-width: 80%; padding: 12px 16px; border-radius: 14px; font-size: 0.9rem;
+            line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;
         }
-        .message.assistant .msg-bubble {
-            background: var(--bg-bubble-ai);
-            border: 1px solid var(--border);
-            border-bottom-left-radius: 4px;
-        }
-        .message.user .msg-bubble {
-            background: var(--bg-bubble-user);
-            border: 1px solid rgba(29,185,84,0.15);
-            border-bottom-right-radius: 4px;
-            color: #d4f5e0;
-        }
+        .message.assistant .msg-bubble { background: var(--bg-bubble-ai); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        .message.user .msg-bubble { background: var(--bg-bubble-user); border: 1px solid rgba(29,185,84,0.15); border-bottom-right-radius: 4px; color: #d4f5e0; }
 
-        /* Prompt card in live chat */
+        /* Prompt card (green — prompt builder mode) */
         .prompt-card {
             background: linear-gradient(135deg, rgba(29,185,84,0.08), rgba(29,100,185,0.06));
-            border: 1px solid rgba(29,185,84,0.25);
-            border-radius: 14px;
-            padding: 20px;
-            margin-top: 8px;
+            border: 1px solid rgba(29,185,84,0.25); border-radius: 14px; padding: 20px; margin-top: 8px;
         }
-        .prompt-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        .prompt-card-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.68rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--green);
-        }
+        .prompt-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .prompt-card-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); }
         .copy-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 7px 16px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.76rem;
-            font-weight: 500;
-            color: #000;
-            background: var(--green);
-            border: none;
-            border-radius: 100px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.76rem; font-weight: 500;
+            color: #000; background: var(--green); border: none; border-radius: 100px;
+            cursor: pointer; transition: all 0.2s ease;
         }
         .copy-btn:hover { background: var(--green-glow); transform: translateY(-1px); }
         .copy-btn.copied { background: #17d9a0; }
-        .prompt-card-text {
-            font-size: 0.9rem;
-            line-height: 1.7;
-            color: var(--text);
+        .prompt-card-text { font-size: 0.9rem; line-height: 1.7; color: var(--text); }
+
+        /* ============ PLAYLIST CARD (purple — creator mode) ============ */
+        .playlist-card {
+            background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(29,100,185,0.06));
+            border: 1px solid rgba(139,92,246,0.25); border-radius: 14px; padding: 20px; margin-top: 8px;
         }
+        .playlist-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+        .playlist-card-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--purple); }
+        .playlist-card-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
+        .playlist-card-count { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 12px; }
+        .playlist-songs-list {
+            max-height: 280px; overflow-y: auto; display: flex; flex-direction: column;
+            margin-bottom: 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.2);
+        }
+        .playlist-songs-list::-webkit-scrollbar { width: 4px; }
+        .playlist-songs-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .playlist-song-item {
+            display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+            font-size: 0.82rem; border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .playlist-song-item:last-child { border-bottom: none; }
+        .playlist-song-num { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--text-muted); min-width: 24px; text-align: right; }
+        .playlist-song-name { color: var(--text); }
+        .playlist-song-artist { color: var(--text-dim); font-size: 0.78rem; }
+        .playlist-song-sep { color: var(--text-muted); margin: 0 4px; font-size: 0.78rem; }
+        .playlist-loading-songs { padding: 20px; text-align: center; font-size: 0.82rem; color: var(--text-dim); }
+
+        .create-playlist-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 14px 24px; font-family: 'Syne', sans-serif; font-size: 0.95rem;
+            font-weight: 700; color: #fff; background: var(--purple); border: none;
+            border-radius: 12px; cursor: pointer; transition: all 0.25s ease;
+        }
+        .create-playlist-btn:hover { background: var(--purple-glow); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(139,92,246,0.3); }
+        .create-playlist-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .create-playlist-btn.success { background: var(--green); color: #000; }
+        .playlist-success-link { display: block; text-align: center; margin-top: 10px; font-size: 0.82rem; color: var(--green); text-decoration: none; }
+        .playlist-success-link:hover { color: var(--green-glow); text-decoration: underline; }
 
         /* Typing indicator */
-        .typing-indicator {
-            display: flex;
-            gap: 10px;
-            animation: msgIn 0.35s ease-out both;
-        }
+        .typing-indicator { display: flex; gap: 10px; animation: msgIn 0.35s ease-out both; }
         .typing-dots {
-            display: flex;
-            gap: 5px;
-            padding: 14px 18px;
-            background: var(--bg-bubble-ai);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            border-bottom-left-radius: 4px;
+            display: flex; gap: 5px; padding: 14px 18px; background: var(--bg-bubble-ai);
+            border: 1px solid var(--border); border-radius: 14px; border-bottom-left-radius: 4px;
         }
-        .typing-dots span {
-            width: 6px;
-            height: 6px;
-            background: var(--text-dim);
-            border-radius: 50%;
-            animation: dotBounce 1.4s ease-in-out infinite;
-        }
+        .typing-dots span { width: 6px; height: 6px; background: var(--text-dim); border-radius: 50%; animation: dotBounce 1.4s ease-in-out infinite; }
         .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
         .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
-        @keyframes dotBounce {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-5px); opacity: 1; }
-        }
+        @keyframes dotBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-5px); opacity: 1; } }
 
-        /* Chat input bar */
+        /* Input bar */
         .chat-input-bar {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            padding: 16px 20px;
-            border-top: 1px solid var(--border);
-            background: rgba(255,255,255,0.02);
+            display: flex; gap: 10px; align-items: flex-end; padding: 16px 20px;
+            border-top: 1px solid var(--border); background: rgba(255,255,255,0.02);
         }
-
         .input-field {
-            flex: 1;
-            padding: 12px 18px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.92rem;
-            color: var(--text);
-            background: rgba(255,255,255,0.06);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            outline: none;
-            resize: none;
-            max-height: 120px;
-            line-height: 1.5;
+            flex: 1; padding: 12px 18px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+            color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+            border-radius: 20px; outline: none; resize: none; max-height: 120px; line-height: 1.5;
             transition: border-color 0.2s ease;
         }
         .input-field:focus { border-color: rgba(29,185,84,0.4); }
+        .chat-box.creator-active .input-field:focus { border-color: rgba(139,92,246,0.4); }
         .input-field::placeholder { color: var(--text-muted); }
         .input-field:disabled { opacity: 0.4; cursor: not-allowed; }
-
         .send-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: none;
-            background: var(--green);
-            color: #000;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
+            width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--green);
+            color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; flex-shrink: 0;
         }
         .send-btn:hover { background: var(--green-glow); transform: scale(1.05); }
         .send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
         .send-btn svg { width: 18px; height: 18px; }
-
-        .input-hint {
-            text-align: center;
-            padding: 8px 20px 12px;
-            font-size: 0.68rem;
-            color: var(--text-muted);
-        }
+        .chat-box.creator-active .send-btn { background: var(--purple); color: #fff; }
+        .chat-box.creator-active .send-btn:hover { background: var(--purple-glow); }
+        .input-hint { text-align: center; padding: 8px 20px 12px; font-size: 0.68rem; color: var(--text-muted); }
 
         /* ============ FOOTER ============ */
-        footer {
-            text-align: center;
-            padding: 40px 24px 32px;
-            font-size: 0.78rem;
-            color: var(--text-muted);
-        }
+        footer { text-align: center; padding: 40px 24px 32px; font-size: 0.78rem; color: var(--text-muted); }
         footer a { color: var(--text-dim); text-decoration: none; }
         footer a:hover { color: var(--text); }
 
         /* ============ HOW TO USE MODAL ============ */
         .howto-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
-            overflow-y: auto;
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000;
+            justify-content: center; align-items: flex-start; padding: 40px 20px; overflow-y: auto;
         }
         .howto-overlay.open { display: flex; }
-
         .howto-panel {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            max-width: 600px;
-            width: 100%;
-            max-height: calc(100vh - 80px);
-            overflow-y: auto;
-            box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-            animation: panelIn 0.3s ease-out;
+            background: var(--bg-surface); border: 1px solid var(--border); border-radius: 20px;
+            max-width: 600px; width: 100%; max-height: calc(100vh - 80px); overflow-y: auto;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5); animation: panelIn 0.3s ease-out;
         }
-        @keyframes panelIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes panelIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .howto-panel::-webkit-scrollbar { width: 5px; }
-        .howto-panel::-webkit-scrollbar-track { background: transparent; }
         .howto-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-
         .howto-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 24px 28px 20px;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            background: var(--bg-surface);
-            border-radius: 20px 20px 0 0;
-            z-index: 1;
+            display: flex; align-items: center; justify-content: space-between; padding: 24px 28px 20px;
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-surface);
+            border-radius: 20px 20px 0 0; z-index: 1;
         }
-        .howto-top h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.15rem;
-            font-weight: 800;
-        }
+        .howto-top h2 { font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 800; }
         .howto-close {
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: none;
-            color: var(--text-dim);
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
+            width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+            background: none; color: var(--text-dim); font-size: 1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
         }
         .howto-close:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-
-        .howto-content {
-            padding: 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 28px;
-        }
+        .howto-content { padding: 28px; display: flex; flex-direction: column; gap: 28px; }
         .howto-block { display: flex; gap: 16px; }
         .howto-num {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.4rem;
-            font-weight: 800;
+            font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
             background: linear-gradient(135deg, var(--green), rgba(29,185,84,0.2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1;
-            flex-shrink: 0;
-            width: 28px;
-            padding-top: 2px;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            line-height: 1; flex-shrink: 0; width: 28px; padding-top: 2px;
         }
-        .howto-block h3 {
-            font-family: 'Syne', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 6px;
+        .howto-num.purple {
+            background: linear-gradient(135deg, var(--purple), rgba(139,92,246,0.2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        .howto-block p {
-            font-size: 0.84rem;
-            color: var(--text-dim);
-            line-height: 1.6;
-        }
-        .howto-spotify-steps {
-            margin-top: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .spotify-step {
-            display: flex;
-            gap: 8px;
-            font-size: 0.84rem;
-            color: var(--text-dim);
-            line-height: 1.55;
-        }
-        .spotify-step-num {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--green);
-            flex-shrink: 0;
-            padding-top: 2px;
-        }
+        .howto-block h3 { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+        .howto-block p { font-size: 0.84rem; color: var(--text-dim); line-height: 1.6; }
+        .howto-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+        .howto-section-label { font-family: 'Space Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: -12px; }
+        .howto-section-label.green { color: var(--green); }
+        .howto-section-label.purple { color: var(--purple); }
         .howto-note {
-            font-size: 0.82rem;
-            line-height: 1.55;
-            color: var(--text-dim);
-            background: rgba(255,200,50,0.06);
-            border: 1px solid rgba(255,200,50,0.15);
-            border-radius: 12px;
-            padding: 16px 20px;
+            font-size: 0.82rem; line-height: 1.55; color: var(--text-dim);
+            background: rgba(255,200,50,0.06); border: 1px solid rgba(255,200,50,0.15);
+            border-radius: 12px; padding: 16px 20px;
         }
         .howto-note strong { color: #fbbf24; }
 
         /* ============ SCROLL ANIMATIONS ============ */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.7s ease, transform 0.7s ease;
-        }
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .fade-in { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
 
         /* ============ RESPONSIVE ============ */
         @media (max-width: 700px) {
@@ -1063,6 +426,8 @@
             .chat-zone { padding: 0 16px 32px; }
             .msg-bubble { max-width: 88%; }
             .user-info span { display: none; }
+            .mode-switcher { max-width: 100%; }
+            .mode-tab { font-size: 0.78rem; padding: 10px 14px; }
         }
     </style>
 </head>
@@ -1073,7 +438,7 @@
 
     <div class="page-wrapper">
 
-        <!-- HEADER -->
+        <!-- ============ HEADER ============ -->
         <div class="header">
             <div class="header-left">
                 <span class="app-name">Playlist Buddy</span>
@@ -1091,7 +456,7 @@
             </div>
         </div>
 
-        <!-- HOW TO USE MODAL -->
+        <!-- ============ HOW TO USE MODAL ============ -->
         <div class="howto-overlay" id="howtoOverlay" onclick="closeHowToOutside(event)">
             <div class="howto-panel">
                 <div class="howto-top">
@@ -1099,65 +464,55 @@
                     <button class="howto-close" onclick="toggleHowTo()">✕</button>
                 </div>
                 <div class="howto-content">
+                    <div class="howto-section-label green">✍️ Feature 1: Prompt Builder</div>
                     <div class="howto-block">
                         <div class="howto-num">1</div>
                         <div>
-                            <h3>Chat with the AI about your playlist idea</h3>
-                            <p>Type what kind of playlist you want in the chat box below. Be as vague or specific as you like — "something for a road trip," "sad songs for a rainy day," or "90s hip-hop with jazzy beats." The AI already has access to your Spotify library, so it knows your taste.</p>
+                            <h3>Chat about what you want</h3>
+                            <p>In <strong>Prompt Builder</strong> mode, describe the playlist you're imagining. The AI knows your library and asks follow-up questions to nail the vibe.</p>
                         </div>
                     </div>
                     <div class="howto-block">
                         <div class="howto-num">2</div>
                         <div>
-                            <h3>Answer a few quick questions</h3>
-                            <p>The AI will ask 2-3 follow-up questions to dial in the details — things like energy level, mood, whether you want familiar songs or new discoveries. Just answer naturally, like you're texting a friend who knows music.</p>
-                        </div>
-                    </div>
-                    <div class="howto-block">
-                        <div class="howto-num">3</div>
-                        <div>
                             <h3>Copy your generated prompt</h3>
-                            <p>Once the AI has enough info, it'll create a detailed prompt in a green card with a <strong>Copy</strong> button. Click it — the prompt is now on your clipboard, ready to paste.</p>
+                            <p>The AI creates a detailed prompt. Click <strong>Copy</strong>, then paste it into Spotify's AI Playlist feature (Your Library → + → AI Playlist). Great for discovering NEW songs.</p>
+                        </div>
+                    </div>
+                    <hr class="howto-divider">
+                    <div class="howto-section-label purple">🎵 Feature 2: Playlist Creator</div>
+                    <div class="howto-block">
+                        <div class="howto-num purple">3</div>
+                        <div>
+                            <h3>Switch to Playlist Creator</h3>
+                            <p>Use the <strong>purple tab</strong>. In this mode the AI searches your entire library and picks specific songs that match what you describe.</p>
                         </div>
                     </div>
                     <div class="howto-block">
-                        <div class="howto-num">4</div>
+                        <div class="howto-num purple">4</div>
                         <div>
-                            <h3>Paste it into Spotify's AI Playlist feature</h3>
-                            <p>Here's where to find it in Spotify:</p>
-                            <div class="howto-spotify-steps">
-                                <div class="spotify-step">
-                                    <span class="spotify-step-num">a.</span>
-                                    <span>Make sure you have the <strong>latest version</strong> of Spotify installed.</span>
-                                </div>
-                                <div class="spotify-step">
-                                    <span class="spotify-step-num">b.</span>
-                                    <span>Open Spotify and tap <strong>"Your Library"</strong> (bottom right).</span>
-                                </div>
-                                <div class="spotify-step">
-                                    <span class="spotify-step-num">c.</span>
-                                    <span>Tap the <strong>"+"</strong> button at the top to create a new playlist.</span>
-                                </div>
-                                <div class="spotify-step">
-                                    <span class="spotify-step-num">d.</span>
-                                    <span>Select <strong>"AI Playlist"</strong> (may also appear as "Create with AI").</span>
-                                </div>
-                                <div class="spotify-step">
-                                    <span class="spotify-step-num">e.</span>
-                                    <span><strong>Paste your prompt</strong> into the text box and hit create.</span>
-                                </div>
-                            </div>
+                            <h3>Review the song list</h3>
+                            <p>You'll see every song the AI picked. Ask it to add, remove, or swap songs until you're happy.</p>
                         </div>
                     </div>
                     <div class="howto-block">
-                        <div class="howto-num">5</div>
+                        <div class="howto-num purple">5</div>
                         <div>
-                            <h3>Tweak if needed</h3>
-                            <p>Not quite right? Come back to the chat and ask the AI to adjust — "make it more upbeat," "add some 2000s tracks," "remove the R&B." It'll generate an updated prompt you can copy and try again.</p>
+                            <h3>Create with one click</h3>
+                            <p>Hit <strong>Create Playlist</strong> and it's instantly added to your Spotify. Open the app and it's already there.</p>
+                        </div>
+                    </div>
+                    <hr class="howto-divider">
+                    <div class="howto-section-label green">💡 Pro Tip: Use them together</div>
+                    <div class="howto-block">
+                        <div class="howto-num">→</div>
+                        <div>
+                            <h3>Prompt Builder + Playlist Creator</h3>
+                            <p>Start with <strong>Prompt Builder</strong> to describe and refine the playlist you want. Then switch to <strong>Playlist Creator</strong> and describe the same idea — the AI builds a real playlist from songs you already love. Use the prompt for Spotify's AI to find new songs, and the creator for your existing library.</p>
                         </div>
                     </div>
                     <div class="howto-note">
-                        <strong>⚠️ Important:</strong> Spotify's AI Playlist feature requires the latest Spotify app update. If you don't see the option, update your app and try again.
+                        <strong>⚠️ Note:</strong> Playlist Creator only uses songs already in your library (liked songs + playlists). For discovering brand new music, use Prompt Builder to generate a prompt for Spotify's AI.
                     </div>
                 </div>
             </div>
@@ -1166,7 +521,7 @@
         <!-- ============ HERO ============ -->
         <section class="hero">
             <h1>Welcome, {{ username }}.<br><span class="accent">Let's build a playlist.</span></h1>
-            <p class="hero-sub">Your Spotify library is being scanned. Once ready, describe any playlist idea below and the AI will craft a detailed prompt you can paste into Spotify.</p>
+            <p class="hero-sub">Your Spotify library is being scanned. Once ready, pick a mode and describe any playlist idea below.</p>
             <div class="library-status">
                 <div id="welcomeLoading">
                     <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
@@ -1176,8 +531,20 @@
                 </div>
                 <div class="loading-done" id="loadingDone">
                     <div class="done-check">✓</div>
-                    <div class="done-text">Library loaded — start chatting below!</div>
+                    <div class="done-text" id="doneText">Library loaded — start chatting below!</div>
                 </div>
+            </div>
+            <!-- MODE SWITCHER -->
+            <div class="mode-switcher" id="modeSwitcher">
+                <button class="mode-tab active-prompt" id="tabPrompt" onclick="switchMode('prompt')">
+                    <span class="mode-icon">✍️</span> Prompt Builder
+                </button>
+                <button class="mode-tab" id="tabCreator" onclick="switchMode('creator')">
+                    <span class="mode-icon">🎵</span> Playlist Creator
+                </button>
+            </div>
+            <div class="mode-description" id="modeDescription">
+                Craft a detailed prompt to paste into Spotify's AI playlist feature
             </div>
         </section>
 
@@ -1187,18 +554,18 @@
             <div class="steps-row">
                 <div class="step-card">
                     <div class="step-num">1</div>
-                    <h3>We read your library</h3>
-                    <p>Liked songs, playlists, top artists, and listening patterns — all scanned automatically.</p>
+                    <h3>We scan your library</h3>
+                    <p>Every liked song, every playlist, your top artists — all loaded automatically.</p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">2</div>
                     <h3>Chat about what you want</h3>
-                    <p>The AI already knows your taste. Describe the vibe — it'll ask smart follow-ups.</p>
+                    <p>The AI already knows your taste. Describe the vibe and it'll ask smart follow-ups.</p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">3</div>
-                    <h3>Copy your prompt</h3>
-                    <p>Get a detailed, ready-to-paste prompt. Drop it into Spotify's AI playlist feature.</p>
+                    <h3>Build or copy</h3>
+                    <p>Get a copy-paste prompt for Spotify's AI, or create the playlist directly from your library.</p>
                 </div>
             </div>
         </div>
@@ -1224,78 +591,26 @@
         <!-- ============ DEMO CONVERSATIONS ============ -->
         <div class="content-section demos-section fade-in">
             <div class="section-title">See it in action</div>
-            <div class="demos-subtitle">Two real examples of Playlist Buddy crafting prompts</div>
+            <div class="demos-subtitle">Two examples of Playlist Buddy crafting prompts</div>
             <div class="demos-row">
-                <!-- Demo 1 -->
                 <div class="demo-phone">
-                    <div class="demo-header">
-                        <div class="demo-dot"></div>
-                        <span class="demo-header-label">Hip-Hop · Boom Bap</span>
-                    </div>
+                    <div class="demo-header"><div class="demo-dot"></div><span class="demo-header-label">Hip-Hop · Boom Bap</span></div>
                     <div class="demo-messages" id="demo1">
-                        <div class="demo-msg ai" data-delay="300">
-                            <div class="demo-avatar">🎵</div>
-                            <div class="demo-bubble">Hey! I see lots of Drake and J. Cole in your library. What kind of playlist are you thinking about?</div>
-                        </div>
-                        <div class="demo-msg user" data-delay="1000">
-                            <div class="demo-avatar">👤</div>
-                            <div class="demo-bubble">Boom-bap with 90's sounding drums and smooth vocals. Doesn't need to be from the 90's though</div>
-                        </div>
-                        <div class="demo-msg ai" data-delay="1800">
-                            <div class="demo-avatar">🎵</div>
-                            <div class="demo-bubble">Great taste! Want mostly familiar tracks or open to discovery?</div>
-                        </div>
-                        <div class="demo-msg user" data-delay="2500">
-                            <div class="demo-avatar">👤</div>
-                            <div class="demo-bubble">Mostly familiar. And I love Ready or Not by Fugees — songs like that</div>
-                        </div>
-                        <div class="demo-msg ai" data-delay="3400">
-                            <div class="demo-avatar">🎵</div>
-                            <div class="demo-bubble">
-                                Here's your prompt:
-                                <div class="demo-prompt-card">
-                                    <div class="demo-prompt-label">✨ Your Playlist Prompt</div>
-                                    <div class="demo-prompt-text">A boom-bap playlist with 90s-style drums, jazzy samples, and smooth soulful vocals. Think Fugees "Ready or Not" energy — laid-back grooves with lyrical depth. Feature J. Cole, A$AP Rocky, Joey Bada$$, and Nas, with neo-soul undertones. Keep it mostly familiar with that golden-era feel, even if the songs are modern.</div>
-                                    <div class="demo-copy-btn">📋 Copy prompt</div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="demo-msg ai" data-delay="300"><div class="demo-avatar">🎵</div><div class="demo-bubble">Hey! I see lots of Drake and J. Cole in your library. What kind of playlist are you thinking about?</div></div>
+                        <div class="demo-msg user" data-delay="1000"><div class="demo-avatar">👤</div><div class="demo-bubble">Boom-bap with 90's sounding drums and smooth vocals. Doesn't need to be from the 90's though</div></div>
+                        <div class="demo-msg ai" data-delay="1800"><div class="demo-avatar">🎵</div><div class="demo-bubble">Great taste! Want mostly familiar tracks or open to discovery?</div></div>
+                        <div class="demo-msg user" data-delay="2500"><div class="demo-avatar">👤</div><div class="demo-bubble">Mostly familiar. And I love Ready or Not by Fugees — songs like that</div></div>
+                        <div class="demo-msg ai" data-delay="3400"><div class="demo-avatar">🎵</div><div class="demo-bubble">Here's your prompt:<div class="demo-prompt-card"><div class="demo-prompt-label">✨ Your Playlist Prompt</div><div class="demo-prompt-text">A boom-bap playlist with 90s-style drums, jazzy samples, and smooth soulful vocals. Think Fugees "Ready or Not" energy — laid-back grooves with lyrical depth. Feature J. Cole, A$AP Rocky, Joey Bada$$, and Nas, with neo-soul undertones. Keep it mostly familiar with that golden-era feel, even if the songs are modern.</div><div class="demo-copy-btn">📋 Copy prompt</div></div></div></div>
                     </div>
                 </div>
-                <!-- Demo 2 -->
                 <div class="demo-phone">
-                    <div class="demo-header">
-                        <div class="demo-dot"></div>
-                        <span class="demo-header-label">Classic Rock · 80s</span>
-                    </div>
+                    <div class="demo-header"><div class="demo-dot"></div><span class="demo-header-label">Classic Rock · 80s</span></div>
                     <div class="demo-messages" id="demo2">
-                        <div class="demo-msg ai" data-delay="500">
-                            <div class="demo-avatar">🎵</div>
-                            <div class="demo-bubble">Hey! I can see you've got a lot of Fleetwood Mac and Bon Jovi in your library. What are we building today?</div>
-                        </div>
-                        <div class="demo-msg user" data-delay="1200">
-                            <div class="demo-avatar">👤</div>
-                            <div class="demo-bubble">Something for a road trip. Classic rock, 80s arena feel, windows down energy</div>
-                        </div>
-                        <div class="demo-msg ai" data-delay="2000">
-                            <div class="demo-avatar">🎵</div>
-                            <div class="demo-bubble">Love it! Should it build in energy or stay high the whole time? Any must-include tracks?</div>
-                        </div>
-                        <div class="demo-msg user" data-delay="2800">
-                            <div class="demo-avatar">👤</div>
-                            <div class="demo-bubble">Build up gradually. Definitely include Don't Stop Believin' and Pour Some Sugar on Me</div>
-                        </div>
-                        <div class="demo-msg ai" data-delay="3700">
-                            <div class="demo-avatar">🎵</div>
-                            <div class="demo-bubble">
-                                Here's your prompt:
-                                <div class="demo-prompt-card">
-                                    <div class="demo-prompt-label">✨ Your Playlist Prompt</div>
-                                    <div class="demo-prompt-text">An 80s classic rock road trip playlist that builds from cruising to full-throttle sing-along. Start with mid-tempo tracks like Tom Petty and Fleetwood Mac, then ramp into arena anthems — Bon Jovi, Def Leppard "Pour Some Sugar on Me," Journey "Don't Stop Believin'." Big guitars, soaring choruses, windows-down energy. Keep it all familiar hits.</div>
-                                    <div class="demo-copy-btn">📋 Copy prompt</div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="demo-msg ai" data-delay="500"><div class="demo-avatar">🎵</div><div class="demo-bubble">Hey! I can see you've got a lot of Fleetwood Mac and Bon Jovi in your library. What are we building today?</div></div>
+                        <div class="demo-msg user" data-delay="1200"><div class="demo-avatar">👤</div><div class="demo-bubble">Something for a road trip. Classic rock, 80s arena feel, windows down energy</div></div>
+                        <div class="demo-msg ai" data-delay="2000"><div class="demo-avatar">🎵</div><div class="demo-bubble">Love it! Should it build in energy or stay high the whole time? Any must-include tracks?</div></div>
+                        <div class="demo-msg user" data-delay="2800"><div class="demo-avatar">👤</div><div class="demo-bubble">Build up gradually. Definitely include Don't Stop Believin' and Pour Some Sugar on Me</div></div>
+                        <div class="demo-msg ai" data-delay="3700"><div class="demo-avatar">🎵</div><div class="demo-bubble">Here's your prompt:<div class="demo-prompt-card"><div class="demo-prompt-label">✨ Your Playlist Prompt</div><div class="demo-prompt-text">An 80s classic rock road trip playlist that builds from cruising to full-throttle sing-along. Start with mid-tempo tracks like Tom Petty and Fleetwood Mac, then ramp into arena anthems — Bon Jovi, Def Leppard "Pour Some Sugar on Me," Journey "Don't Stop Believin'." Big guitars, soaring choruses, windows-down energy.</div><div class="demo-copy-btn">📋 Copy prompt</div></div></div></div>
                     </div>
                 </div>
             </div>
@@ -1305,105 +620,40 @@
         <div class="content-section guide-section fade-in">
             <div class="guide-header">
                 <div class="section-title">Words to describe your sound</div>
-                <p class="guide-intro">Not sure how to describe the playlist you want? Here are six ways to think about music. Use any of these when chatting — the AI will know exactly what you mean.</p>
-                <p class="guide-tip">💡 Try asking the AI: <em>"What genre would you call my music?"</em></p>
+                <p class="guide-intro">Not sure how to describe the playlist you want? Here are ways to think about music. Use any of these when chatting.</p>
+                <p class="guide-tip">💡 Try asking: <em>"What genre would you call my music?"</em></p>
             </div>
             <div class="guide-grid">
-                <div class="guide-card">
-                    <div class="guide-icon">🎸</div>
-                    <h3>Genre</h3>
-                    <p class="guide-desc">The broad category your music falls into.</p>
-                    <div class="guide-examples">
-                        <span class="guide-tag">Hip Hop</span>
-                        <span class="guide-tag">Rock</span>
-                        <span class="guide-tag">Pop</span>
-                        <span class="guide-tag">R&B</span>
-                        <span class="guide-tag">Indie</span>
-                        <span class="guide-tag">Country</span>
-                        <span class="guide-tag">Folk</span>
-                        <span class="guide-tag">Alternative</span>
-                    </div>
-                </div>
-                <div class="guide-card">
-                    <div class="guide-icon">⚡</div>
-                    <h3>Energy</h3>
-                    <p class="guide-desc">How fast or intense the song feels — couch song or treadmill song?</p>
-                    <div class="guide-scale">
-                        <div class="scale-end low">Chill &amp; Slow</div>
-                        <div class="scale-bar"><div class="scale-fill energy"></div></div>
-                        <div class="scale-end high">Intense &amp; Fast</div>
-                    </div>
-                </div>
-                <div class="guide-card">
-                    <div class="guide-icon">🌡️</div>
-                    <h3>Temperature</h3>
-                    <p class="guide-desc">"Cold" and electronic, or "warm" and human — like a live band in a cozy room?</p>
-                    <div class="guide-scale">
-                        <div class="scale-end low">Cold &amp; Electronic</div>
-                        <div class="scale-bar"><div class="scale-fill temp"></div></div>
-                        <div class="scale-end high">Warm &amp; Organic</div>
-                    </div>
-                </div>
-                <div class="guide-card">
-                    <div class="guide-icon">🌅</div>
-                    <h3>Space</h3>
-                    <p class="guide-desc">Huge and echoey like an open field, or close and personal like a whisper?</p>
-                    <div class="guide-scale">
-                        <div class="scale-end low">Wide &amp; Echoey</div>
-                        <div class="scale-bar"><div class="scale-fill space"></div></div>
-                        <div class="scale-end high">Close &amp; Intimate</div>
-                    </div>
-                </div>
-                <div class="guide-card">
-                    <div class="guide-icon">🎨</div>
-                    <h3>Mood</h3>
-                    <p class="guide-desc">Bright and uplifting like sunshine, or dark and moody like a rainy night?</p>
-                    <div class="guide-scale">
-                        <div class="scale-end low">Bright &amp; Uplifting</div>
-                        <div class="scale-bar"><div class="scale-fill mood"></div></div>
-                        <div class="scale-end high">Dark &amp; Moody</div>
-                    </div>
-                </div>
-                <div class="guide-card">
-                    <div class="guide-icon">🔄</div>
-                    <h3>Structure</h3>
-                    <p class="guide-desc">One repeating groove, or a journey that builds and evolves?</p>
-                    <div class="guide-scale">
-                        <div class="scale-end low">Steady Loop</div>
-                        <div class="scale-bar"><div class="scale-fill structure"></div></div>
-                        <div class="scale-end high">Builds &amp; Evolves</div>
-                    </div>
-                </div>
+                <div class="guide-card"><div class="guide-icon">🎸</div><h3>Genre</h3><p class="guide-desc">The broad category your music falls into.</p><div class="guide-examples"><span class="guide-tag">Hip Hop</span><span class="guide-tag">Rock</span><span class="guide-tag">Pop</span><span class="guide-tag">R&B</span><span class="guide-tag">Indie</span><span class="guide-tag">Country</span><span class="guide-tag">Folk</span><span class="guide-tag">Alternative</span></div></div>
+                <div class="guide-card"><div class="guide-icon">⚡</div><h3>Energy</h3><p class="guide-desc">How fast or intense — couch song or treadmill song?</p><div class="guide-scale"><div class="scale-end">Chill</div><div class="scale-bar"><div class="scale-fill energy"></div></div><div class="scale-end">Intense</div></div></div>
+                <div class="guide-card"><div class="guide-icon">🌡️</div><h3>Temperature</h3><p class="guide-desc">"Cold" and electronic, or "warm" and organic?</p><div class="guide-scale"><div class="scale-end">Cold</div><div class="scale-bar"><div class="scale-fill temp"></div></div><div class="scale-end">Warm</div></div></div>
+                <div class="guide-card"><div class="guide-icon">🌅</div><h3>Space</h3><p class="guide-desc">Huge and echoey, or close and personal?</p><div class="guide-scale"><div class="scale-end">Wide</div><div class="scale-bar"><div class="scale-fill space"></div></div><div class="scale-end">Intimate</div></div></div>
+                <div class="guide-card"><div class="guide-icon">🎨</div><h3>Mood</h3><p class="guide-desc">Bright and uplifting, or dark and moody?</p><div class="guide-scale"><div class="scale-end">Bright</div><div class="scale-bar"><div class="scale-fill mood"></div></div><div class="scale-end">Dark</div></div></div>
+                <div class="guide-card"><div class="guide-icon">🔄</div><h3>Structure</h3><p class="guide-desc">One repeating groove, or a journey that builds?</p><div class="guide-scale"><div class="scale-end">Steady</div><div class="scale-bar"><div class="scale-fill structure"></div></div><div class="scale-end">Evolves</div></div></div>
             </div>
         </div>
 
         <!-- ============ CHAT ZONE ============ -->
         <div class="chat-zone" id="chatZone">
             <div class="chat-zone-header">
-                <h2>Start building your playlist</h2>
-                <p>Describe what you're in the mood for — the AI knows your library</p>
+                <h2 id="chatZoneTitle">Start building your playlist</h2>
+                <p id="chatZoneSub">Describe what you're in the mood for — the AI knows your library</p>
             </div>
-
             <div class="chat-box" id="chatBox">
+                <div class="chat-mode-bar prompt-mode" id="chatModeBar">
+                    <div class="mode-dot"></div>
+                    <span id="chatModeLabel">Prompt Builder</span>
+                </div>
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-empty" id="chatEmpty">
                         <div class="chat-empty-icon">🎧</div>
-                        <div>Type a message below to get started</div>
+                        <div id="chatEmptyText">Type a message below to get started</div>
                     </div>
                 </div>
                 <div class="chat-input-bar">
-                    <textarea
-                        id="inputField"
-                        class="input-field"
-                        placeholder="Describe what playlist you want to create..."
-                        rows="1"
-                        disabled
-                    ></textarea>
+                    <textarea id="inputField" class="input-field" placeholder="Describe what playlist you want to create..." rows="1" disabled></textarea>
                     <button id="sendBtn" class="send-btn" disabled>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
                 </div>
                 <div class="input-hint">Press Enter to send · Shift+Enter for new line</div>
@@ -1415,31 +665,104 @@
             <br><br>
             <a href="https://github.com/reef111qq/playlist-buddy">GitHub</a>
         </footer>
-
     </div>
 
     <script>
-        // ============ State ============
-        let conversationHistory = [];
+        // ============================================================
+        //  STATE
+        // ============================================================
+        let currentMode = 'prompt';  // 'prompt' or 'creator'
+
+        // Each mode has its own conversation history and UI state
+        const modes = {
+            prompt: { history: [], greetingSent: false, elements: [] },
+            creator: { history: [], greetingSent: false, elements: [] },
+        };
+
         let libraryReady = false;
         let isWaiting = false;
-        let greetingSent = false;
+        let totalSongs = 0;
 
-        // ============ DOM refs ============
+        // Track the latest playlist selection so the Create button knows what to send
+        let latestPlaylistSelection = null;  // { name: 'playlist name', songIds: ['id1', 'id2'] }
+
+        // ============================================================
+        //  DOM REFS
+        // ============================================================
         const chatMessages = document.getElementById('chatMessages');
         const chatEmpty = document.getElementById('chatEmpty');
+        const chatEmptyText = document.getElementById('chatEmptyText');
         const inputField = document.getElementById('inputField');
         const sendBtn = document.getElementById('sendBtn');
         const libraryBadge = document.getElementById('libraryBadge');
+        const chatBox = document.getElementById('chatBox');
+        const chatModeBar = document.getElementById('chatModeBar');
+        const chatModeLabel = document.getElementById('chatModeLabel');
+        const tabPrompt = document.getElementById('tabPrompt');
+        const tabCreator = document.getElementById('tabCreator');
+        const modeDescription = document.getElementById('modeDescription');
+        const modeSwitcher = document.getElementById('modeSwitcher');
+        const chatZoneTitle = document.getElementById('chatZoneTitle');
+        const chatZoneSub = document.getElementById('chatZoneSub');
 
-        // ============ Library loading ============
-        window.addEventListener('DOMContentLoaded', () => {
-            loadLibrary();
-            startDemoAnimations();
-            initScrollAnimations();
-        });
+        // ============================================================
+        //  MODE SWITCHING
+        // ============================================================
+        function switchMode(mode) {
+            if (mode === currentMode) return;
 
-        // ============ Loading messages ============
+            // Save current chat elements
+            modes[currentMode].elements = Array.from(chatMessages.children);
+
+            currentMode = mode;
+
+            // Update tabs
+            tabPrompt.className = mode === 'prompt' ? 'mode-tab active-prompt' : 'mode-tab';
+            tabCreator.className = mode === 'creator' ? 'mode-tab active-creator' : 'mode-tab';
+
+            // Update chat box styling
+            chatBox.classList.toggle('creator-active', mode === 'creator');
+
+            // Update mode bar
+            chatModeBar.className = 'chat-mode-bar ' + (mode === 'prompt' ? 'prompt-mode' : 'creator-mode');
+            chatModeLabel.textContent = mode === 'prompt' ? 'Prompt Builder' : 'Playlist Creator';
+
+            // Update descriptions
+            if (mode === 'prompt') {
+                modeDescription.textContent = 'Craft a detailed prompt to paste into Spotify\'s AI playlist feature';
+                inputField.placeholder = 'Describe what playlist you want to create...';
+                chatZoneTitle.textContent = 'Start building your playlist';
+                chatZoneSub.textContent = 'Describe what you\'re in the mood for — the AI knows your library';
+            } else {
+                modeDescription.textContent = 'The AI picks songs from your library and creates a real playlist on Spotify';
+                inputField.placeholder = 'Tell me what songs or vibe to build around...';
+                chatZoneTitle.textContent = 'Create a playlist from your library';
+                chatZoneSub.textContent = 'Describe the vibe — the AI will pick songs from your ' + totalSongs + ' tracks';
+            }
+
+            // Restore saved chat elements (or show empty state)
+            chatMessages.innerHTML = '';
+            const savedElements = modes[currentMode].elements;
+            if (savedElements.length > 0) {
+                savedElements.forEach(el => chatMessages.appendChild(el));
+                scrollChatToBottom();
+            } else {
+                const empty = document.createElement('div');
+                empty.className = 'chat-empty';
+                empty.id = 'chatEmpty';
+                empty.innerHTML = `
+                    <div class="chat-empty-icon">${mode === 'prompt' ? '✍️' : '🎵'}</div>
+                    <div>${mode === 'prompt'
+                        ? 'Describe a playlist idea and get a prompt for Spotify\'s AI'
+                        : 'Describe what you want — the AI will pick songs from your library'
+                    }</div>`;
+                chatMessages.appendChild(empty);
+            }
+        }
+
+        // ============================================================
+        //  LIBRARY LOADING
+        // ============================================================
         const loadingMessages = [
             "Scanning your library...",
             "Stealing all your data right now 👀",
@@ -1467,15 +790,11 @@
         }
 
         function stopLoadingMessages() {
-            if (messageInterval) {
-                clearInterval(messageInterval);
-                messageInterval = null;
-            }
+            if (messageInterval) { clearInterval(messageInterval); messageInterval = null; }
         }
 
         function loadLibrary() {
             startLoadingMessages();
-
             fetch('/api/load-library')
                 .then(r => {
                     if (r.status === 401) { window.location.href = '/'; return; }
@@ -1485,17 +804,16 @@
                 .then(data => {
                     if (!data) return;
                     libraryReady = true;
+                    totalSongs = data.total_songs || 0;
                     stopLoadingMessages();
-
-                    libraryBadge.textContent = 'Library ready';
+                    libraryBadge.textContent = totalSongs + ' songs loaded';
                     libraryBadge.classList.remove('loading');
-
                     inputField.disabled = false;
                     sendBtn.disabled = false;
-
-                    // Show done state
                     document.getElementById('welcomeLoading').style.display = 'none';
+                    document.getElementById('doneText').textContent = totalSongs + ' songs loaded — start chatting below!';
                     document.getElementById('loadingDone').classList.add('show');
+                    modeSwitcher.classList.add('visible');
                 })
                 .catch(err => {
                     console.error('Library load failed:', err);
@@ -1509,58 +827,45 @@
                 });
         }
 
-        // ============ Scroll animations ============
+        // ============================================================
+        //  SCROLL + DEMO ANIMATIONS
+        // ============================================================
         function initScrollAnimations() {
-            const fadeEls = document.querySelectorAll('.fade-in');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target);
-                    }
-                });
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
             }, { threshold: 0.15 });
-            fadeEls.forEach(el => observer.observe(el));
+            document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
         }
 
-        // ============ Demo animations ============
         function startDemoAnimations() {
-            const demoSection = document.querySelector('.demos-section');
-            if (!demoSection) return;
+            const section = document.querySelector('.demos-section');
+            if (!section) return;
             let started = false;
             const obs = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && !started) {
+                entries.forEach(e => {
+                    if (e.isIntersecting && !started) {
                         started = true;
                         ['demo1', 'demo2'].forEach(id => {
-                            const container = document.getElementById(id);
-                            if (!container) return;
-                            const msgs = container.querySelectorAll('.demo-msg');
-                            msgs.forEach(msg => {
-                                const delay = parseInt(msg.dataset.delay) || 0;
-                                setTimeout(() => {
-                                    msg.classList.add('visible');
-                                    container.scrollTop = container.scrollHeight;
-                                }, delay);
+                            const c = document.getElementById(id);
+                            if (!c) return;
+                            c.querySelectorAll('.demo-msg').forEach(msg => {
+                                setTimeout(() => { msg.classList.add('visible'); c.scrollTop = c.scrollHeight; }, parseInt(msg.dataset.delay) || 0);
                             });
                         });
-                        obs.unobserve(entry.target);
+                        obs.unobserve(e.target);
                     }
                 });
             }, { threshold: 0.3 });
-            obs.observe(demoSection);
+            obs.observe(section);
         }
 
-        // ============ Sending messages ============
+        // ============================================================
+        //  SENDING MESSAGES
+        // ============================================================
         inputField.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
-
         sendBtn.addEventListener('click', sendMessage);
-
         inputField.addEventListener('input', () => {
             inputField.style.height = 'auto';
             inputField.style.height = Math.min(inputField.scrollHeight, 120) + 'px';
@@ -1570,61 +875,55 @@
             const text = inputField.value.trim();
             if (!text || !libraryReady || isWaiting) return;
 
-            // First message: hide empty state and send AI greeting first
-            if (!greetingSent) {
-                greetingSent = true;
-                chatEmpty.style.display = 'none';
-                const greeting = "Hey there! What kind of playlist are you thinking of?";
-                conversationHistory.push({ role: 'assistant', content: greeting });
-                addMessageToUI('assistant', greeting);
+            const modeState = modes[currentMode];
+            const isCreator = currentMode === 'creator';
+            const apiUrl = isCreator ? '/api/creator-chat' : '/api/chat';
+
+            // First message: hide empty state
+            if (!modeState.greetingSent) {
+                modeState.greetingSent = true;
+                const emptyEl = chatMessages.querySelector('.chat-empty');
+                if (emptyEl) emptyEl.remove();
             }
 
+            // Add user message
             addMessageToUI('user', text);
-            conversationHistory.push({ role: 'user', content: text });
+            modeState.history.push({ role: 'user', content: text });
 
             inputField.value = '';
             inputField.style.height = 'auto';
-
             showTyping();
             isWaiting = true;
             inputField.disabled = true;
             sendBtn.disabled = true;
 
-            fetch('/api/chat', {
+            fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages: conversationHistory }),
+                body: JSON.stringify({ messages: modeState.history }),
             })
-            .then(r => {
-                if (r.status === 401) { window.location.href = '/'; return; }
-                return r.json();
-            })
+            .then(r => { if (r.status === 401) { window.location.href = '/'; return; } return r.json(); })
             .then(data => {
                 hideTyping();
                 if (!data) return;
                 if (data.error) {
                     addMessageToUI('assistant', 'Sorry, something went wrong: ' + data.error);
                 } else {
-                    conversationHistory.push({ role: 'assistant', content: data.response });
+                    modeState.history.push({ role: 'assistant', content: data.response });
                     addMessageToUI('assistant', data.response);
                 }
             })
-            .catch(err => {
-                hideTyping();
-                addMessageToUI('assistant', 'Connection error — please try again.');
-            })
-            .finally(() => {
-                isWaiting = false;
-                inputField.disabled = false;
-                sendBtn.disabled = false;
-                inputField.focus();
-            });
+            .catch(() => { hideTyping(); addMessageToUI('assistant', 'Connection error — please try again.'); })
+            .finally(() => { isWaiting = false; inputField.disabled = false; sendBtn.disabled = false; inputField.focus(); });
         }
 
-        // ============ UI helpers ============
+        // ============================================================
+        //  UI HELPERS
+        // ============================================================
         function addMessageToUI(role, text) {
+            const isCreator = currentMode === 'creator';
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'message ' + role;
+            messageDiv.className = 'message ' + role + (isCreator && role === 'assistant' ? ' creator-msg' : '');
 
             const avatar = document.createElement('div');
             avatar.className = 'msg-avatar';
@@ -1633,8 +932,71 @@
             const bubble = document.createElement('div');
             bubble.className = 'msg-bubble';
 
+            // Check for PLAYLIST_SELECTION (creator mode)
+            const playlistMatch = text.match(/\[PLAYLIST_SELECTION\]([\s\S]*?)\[\/PLAYLIST_SELECTION\]/);
+
+            // Check for PLAYLIST_PROMPT (prompt builder mode)
             const promptMatch = text.match(/\[PLAYLIST_PROMPT\]([\s\S]*?)\[\/PLAYLIST_PROMPT\]/);
-            if (promptMatch && role === 'assistant') {
+
+            if (playlistMatch && role === 'assistant') {
+                // === PLAYLIST CREATOR CARD ===
+                const block = playlistMatch[1].trim();
+                const beforeBlock = text.substring(0, text.indexOf('[PLAYLIST_SELECTION]')).trim();
+                const afterBlock = text.substring(text.indexOf('[/PLAYLIST_SELECTION]') + '[/PLAYLIST_SELECTION]'.length).trim();
+
+                // Parse playlist name
+                const nameMatch = block.match(/playlist_name:\s*(.+)/);
+                const playlistName = nameMatch ? nameMatch[1].trim() : 'Playlist Buddy Mix';
+
+                // Parse song IDs (one per line after "songs:")
+                const songsSection = block.substring(block.indexOf('songs:') + 6).trim();
+                const songIds = songsSection.split('\n').map(l => l.trim()).filter(l => l.length > 10);
+
+                // Store for Create button
+                latestPlaylistSelection = { name: playlistName, songIds: songIds };
+
+                if (beforeBlock) {
+                    const pre = document.createElement('div');
+                    pre.textContent = beforeBlock;
+                    pre.style.marginBottom = '12px';
+                    bubble.appendChild(pre);
+                }
+
+                // Build playlist card
+                const card = document.createElement('div');
+                card.className = 'playlist-card';
+
+                const cardId = 'playlist-card-' + Date.now();
+                card.id = cardId;
+
+                card.innerHTML = `
+                    <div class="playlist-card-header">
+                        <span class="playlist-card-label">🎵 Your Playlist</span>
+                    </div>
+                    <div class="playlist-card-name">${escapeHtml(playlistName)}</div>
+                    <div class="playlist-card-count">${songIds.length} songs</div>
+                    <div class="playlist-songs-list" id="${cardId}-songs">
+                        <div class="playlist-loading-songs">Loading song details...</div>
+                    </div>
+                    <button class="create-playlist-btn" id="${cardId}-btn" onclick="createPlaylist('${cardId}')">
+                        🎵 Create Playlist on Spotify
+                    </button>
+                    <div id="${cardId}-status"></div>
+                `;
+                bubble.appendChild(card);
+
+                if (afterBlock) {
+                    const post = document.createElement('div');
+                    post.textContent = afterBlock;
+                    post.style.marginTop = '12px';
+                    bubble.appendChild(post);
+                }
+
+                // Fetch song details from our backend
+                fetchSongDetails(songIds, cardId);
+
+            } else if (promptMatch && role === 'assistant') {
+                // === PROMPT BUILDER CARD ===
                 const promptText = promptMatch[1].trim();
                 const beforePrompt = text.substring(0, text.indexOf('[PLAYLIST_PROMPT]')).trim();
                 const afterPrompt = text.substring(text.indexOf('[/PLAYLIST_PROMPT]') + '[/PLAYLIST_PROMPT]'.length).trim();
@@ -1676,12 +1038,90 @@
             scrollChatToBottom();
         }
 
+        // ============================================================
+        //  PLAYLIST CREATOR — SONG DETAILS + CREATE
+        // ============================================================
+        function fetchSongDetails(songIds, cardId) {
+            fetch('/api/song-details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ song_ids: songIds }),
+            })
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById(cardId + '-songs');
+                if (!container || !data.songs) return;
+
+                if (data.songs.length === 0) {
+                    container.innerHTML = '<div class="playlist-loading-songs">No matching songs found in your library</div>';
+                    return;
+                }
+
+                container.innerHTML = data.songs.map((s, i) => `
+                    <div class="playlist-song-item">
+                        <span class="playlist-song-num">${i + 1}</span>
+                        <span class="playlist-song-name">${escapeHtml(s.name)}</span>
+                        <span class="playlist-song-sep">·</span>
+                        <span class="playlist-song-artist">${escapeHtml(s.artist)}</span>
+                    </div>
+                `).join('');
+
+                scrollChatToBottom();
+            })
+            .catch(err => {
+                console.error('Failed to fetch song details:', err);
+                const container = document.getElementById(cardId + '-songs');
+                if (container) container.innerHTML = '<div class="playlist-loading-songs">Could not load song details</div>';
+            });
+        }
+
+        function createPlaylist(cardId) {
+            if (!latestPlaylistSelection) return;
+
+            const btn = document.getElementById(cardId + '-btn');
+            const statusDiv = document.getElementById(cardId + '-status');
+            btn.disabled = true;
+            btn.textContent = '⏳ Creating playlist...';
+
+            fetch('/api/create-playlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: latestPlaylistSelection.name,
+                    song_ids: latestPlaylistSelection.songIds,
+                }),
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    btn.className = 'create-playlist-btn success';
+                    btn.textContent = '✓ Playlist created!';
+                    statusDiv.innerHTML = `<a class="playlist-success-link" href="${data.playlist_url}" target="_blank">Open "${escapeHtml(data.playlist_name)}" in Spotify →</a>`;
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = '🎵 Create Playlist on Spotify';
+                    statusDiv.innerHTML = `<div style="text-align:center;margin-top:8px;font-size:0.82rem;color:#ff6b6b;">${data.error || 'Something went wrong'}</div>`;
+                }
+            })
+            .catch(err => {
+                console.error('Create playlist error:', err);
+                btn.disabled = false;
+                btn.textContent = '🎵 Create Playlist on Spotify';
+                statusDiv.innerHTML = '<div style="text-align:center;margin-top:8px;font-size:0.82rem;color:#ff6b6b;">Connection error — try again</div>';
+            });
+        }
+
+        // ============================================================
+        //  GENERIC HELPERS
+        // ============================================================
         function showTyping() {
             const typing = document.createElement('div');
             typing.className = 'typing-indicator';
             typing.id = 'typingIndicator';
+            const avatarBg = currentMode === 'creator' ? 'var(--purple-dim)' : 'var(--green-dim)';
+            const avatarBorder = currentMode === 'creator' ? 'rgba(139,92,246,0.2)' : 'rgba(29,185,84,0.2)';
             typing.innerHTML = `
-                <div class="msg-avatar" style="background:var(--green-dim);border:1px solid rgba(29,185,84,0.2);">🎵</div>
+                <div class="msg-avatar" style="background:${avatarBg};border:1px solid ${avatarBorder};">🎵</div>
                 <div class="typing-dots"><span></span><span></span><span></span></div>
             `;
             chatMessages.appendChild(typing);
@@ -1694,53 +1134,40 @@
         }
 
         function scrollChatToBottom() {
-            requestAnimationFrame(() => {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            });
+            requestAnimationFrame(() => { chatMessages.scrollTop = chatMessages.scrollHeight; });
         }
 
         function copyPrompt(btn, text) {
             const decoded = text.replace(/\\n/g, '\n').replace(/\\'/g, "'").replace(/\\"/g, '"');
             navigator.clipboard.writeText(decoded).then(() => {
                 btn.classList.add('copied');
-                btn.innerHTML = `
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    Copied!
-                `;
+                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
                 setTimeout(() => {
                     btn.classList.remove('copied');
-                    btn.innerHTML = `
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        Copy prompt
-                    `;
+                    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy prompt`;
                 }, 2000);
             });
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        function escapeHtml(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
+        function escapeForAttr(text) { return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n'); }
 
-        function escapeForAttr(text) {
-            return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
-        }
-
-        // ============ How to Use modal ============
-        function toggleHowTo() {
-            document.getElementById('howtoOverlay').classList.toggle('open');
-        }
-
-        function closeHowToOutside(e) {
-            if (e.target === e.currentTarget) toggleHowTo();
-        }
-
+        // ============================================================
+        //  MODAL
+        // ============================================================
+        function toggleHowTo() { document.getElementById('howtoOverlay').classList.toggle('open'); }
+        function closeHowToOutside(e) { if (e.target === e.currentTarget) toggleHowTo(); }
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const overlay = document.getElementById('howtoOverlay');
-                if (overlay.classList.contains('open')) toggleHowTo();
-            }
+            if (e.key === 'Escape') { const o = document.getElementById('howtoOverlay'); if (o.classList.contains('open')) toggleHowTo(); }
+        });
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLibrary();
+            startDemoAnimations();
+            initScrollAnimations();
         });
     </script>
 </body>

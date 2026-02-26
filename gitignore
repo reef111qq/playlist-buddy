@@ -40,3 +40,6 @@ Thumbs.db
 # Secrets — NEVER COMMIT THESE!
 client_secret.txt
 credentials.json
+
+# Ignore Claude worktrees and metadata
+.claude/
