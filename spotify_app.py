@@ -40,8 +40,8 @@ CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
 CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
 REDIRECT_URI = os.environ.get('REDIRECT_URI', 'http://127.0.0.1:5000/callback')
 
-# Scopes — added playlist-modify-public so we can CREATE playlists
-SCOPE = 'user-library-read playlist-read-private user-top-read playlist-modify-public'
+# Scopes — playlist-modify-public AND playlist-modify-private for creating playlists
+SCOPE = 'user-library-read playlist-read-private user-top-read playlist-modify-public playlist-modify-private'
 
 # LLM settings
 LLM_API_KEY = os.environ.get('OPENAI_API_KEY', '')
@@ -71,6 +71,28 @@ def get_spotify():
     )
     sp = Spotify(auth_manager=sp_oauth)
     return sp, sp_oauth, cache_handler
+
+
+def get_access_token():
+    """
+    Get the current valid access token string from the session.
+    This is needed for direct API calls that bypass Spotipy
+    (because Spotipy's methods hit deprecated endpoints).
+    """
+    cache_handler = FlaskSessionCacheHandler(session)
+    sp_oauth = SpotifyOAuth(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        redirect_uri=REDIRECT_URI,
+        scope=SCOPE,
+        cache_handler=cache_handler,
+    )
+    token_info = cache_handler.get_cached_token()
+    # If token is expired, refresh it
+    if sp_oauth.is_token_expired(token_info):
+        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+        cache_handler.save_token_to_cache(token_info)
+    return token_info['access_token']
 
 
 def is_authenticated():
@@ -465,6 +487,60 @@ def _ensure_library_loaded(user_id):
 
 
 # ---------------------------------------------------------------------------
+# Direct Spotify API calls (bypassing Spotipy for deprecated endpoints)
+# ---------------------------------------------------------------------------
+
+def create_playlist_direct(access_token, name, public=True, description=""):
+    """
+    Create a playlist using POST /me/playlists (the NEW endpoint).
+    
+    The old endpoint POST /users/{user_id}/playlists was REMOVED in
+    Spotify's February 2026 API changes, which is why Spotipy's
+    user_playlist_create() returns 403 Forbidden.
+    """
+    import requests as http_requests
+
+    response = http_requests.post(
+        "https://api.spotify.com/v1/me/playlists",
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "name": name,
+            "public": public,
+            "description": description,
+        },
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def add_items_to_playlist_direct(access_token, playlist_id, uris):
+    """
+    Add tracks using POST /playlists/{id}/items (the NEW endpoint).
+    
+    The old endpoint /playlists/{id}/tracks was RENAMED to /items
+    in the February 2026 API changes. Spotipy's playlist_add_items()
+    may still use the old /tracks path.
+    """
+    import requests as http_requests
+
+    # Spotify allows max 100 URIs per request
+    for i in range(0, len(uris), 100):
+        batch = uris[i:i + 100]
+        response = http_requests.post(
+            f"https://api.spotify.com/v1/playlists/{playlist_id}/items",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            },
+            json={"uris": batch},
+        )
+        response.raise_for_status()
+
+
+# ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
 
@@ -598,6 +674,13 @@ def creator_chat_api():
 def create_playlist_api():
     """
     Actually create a playlist on the user's Spotify account.
+    
+    Uses DIRECT API calls to Spotify instead of Spotipy, because:
+    - Spotipy's user_playlist_create() hits POST /users/{id}/playlists
+      which was REMOVED in Spotify's Feb 2026 API changes (returns 403)
+    - The new endpoint is POST /me/playlists
+    - Similarly, adding items uses /playlists/{id}/items (not /tracks)
+    
     Expects: {"name": "Playlist Name", "song_ids": ["id1", "id2", ...]}
     Returns: {"success": true, "playlist_url": "https://open.spotify.com/..."}
     """
@@ -617,25 +700,23 @@ def create_playlist_api():
     track_uris = [f"spotify:track:{tid}" for tid in song_ids]
 
     try:
-        sp, sp_oauth, cache_handler = get_spotify()
-        user = sp.current_user()
-        user_id = user['id']
+        # Get a fresh access token for direct API calls
+        access_token = get_access_token()
 
-        # Create the playlist
-        playlist = sp.user_playlist_create(
-            user=user_id,
+        # Create the playlist using the NEW endpoint (POST /me/playlists)
+        playlist = create_playlist_direct(
+            access_token=access_token,
             name=playlist_name,
             public=True,
-            description="Created by Playlist Buddy"
+            description="Created by Playlist Buddy",
         )
         playlist_id = playlist['id']
         playlist_url = playlist['external_urls']['spotify']
 
-        # Add tracks in batches of 100 (Spotify's limit per request)
-        for i in range(0, len(track_uris), 100):
-            sp.playlist_add_items(playlist_id, track_uris[i:i + 100])
+        # Add tracks using the NEW endpoint (/playlists/{id}/items)
+        add_items_to_playlist_direct(access_token, playlist_id, track_uris)
 
-        logger.info(f"Created '{playlist_name}' with {len(track_uris)} tracks for {user_id}")
+        logger.info(f"Created '{playlist_name}' with {len(track_uris)} tracks")
         return jsonify({
             'success': True,
             'playlist_url': playlist_url,
@@ -677,6 +758,10 @@ def song_details_api():
                 'artist': song['artist'],
                 'album': song['album'],
             })
+        else:
+            logger.warning(f"Song ID not found in cache: {sid}")
+    
+    logger.info(f"Song details: {len(details)} found out of {len(song_ids)} requested")
     return jsonify({'songs': details})
 
 
