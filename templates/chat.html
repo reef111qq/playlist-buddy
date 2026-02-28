@@ -918,6 +918,23 @@
         }
 
         // ============================================================
+        //  SPOTIFY ID EXTRACTION HELPER
+        // ============================================================
+        // Spotify track IDs are exactly 22 alphanumeric characters.
+        // The AI might output them in various formats:
+        //   "4iV5W9uYEdYUVa79Axb7Rh"                          (plain ID)
+        //   "4iV5W9uYEdYUVa79Axb7Rh | Bohemian Rhapsody — Queen" (with details)
+        //   "- 4iV5W9uYEdYUVa79Axb7Rh"                        (bulleted)
+        //   "1. 4iV5W9uYEdYUVa79Axb7Rh"                       (numbered)
+        // This regex extracts just the 22-char ID from any format.
+        const SPOTIFY_ID_REGEX = /\b[0-9A-Za-z]{22}\b/;
+
+        function extractSpotifyId(line) {
+            const match = line.match(SPOTIFY_ID_REGEX);
+            return match ? match[0] : null;
+        }
+
+        // ============================================================
         //  UI HELPERS
         // ============================================================
         function addMessageToUI(role, text) {
@@ -948,9 +965,13 @@
                 const nameMatch = block.match(/playlist_name:\s*(.+)/);
                 const playlistName = nameMatch ? nameMatch[1].trim() : 'Playlist Buddy Mix';
 
-                // Parse song IDs (one per line after "songs:")
+                // Parse song IDs using regex extraction (handles any AI output format)
                 const songsSection = block.substring(block.indexOf('songs:') + 6).trim();
-                const songIds = songsSection.split('\n').map(l => l.trim()).filter(l => l.length > 10);
+                const songIds = songsSection.split('\n')
+                    .map(l => extractSpotifyId(l))
+                    .filter(id => id !== null);
+
+                console.log(`Parsed ${songIds.length} song IDs from AI output`);
 
                 // Store for Create button
                 latestPlaylistSelection = { name: playlistName, songIds: songIds };
@@ -993,7 +1014,12 @@
                 }
 
                 // Fetch song details from our backend
-                fetchSongDetails(songIds, cardId);
+                if (songIds.length > 0) {
+                    fetchSongDetails(songIds, cardId);
+                } else {
+                    const container = document.getElementById(cardId + '-songs');
+                    if (container) container.innerHTML = '<div class="playlist-loading-songs">Could not parse song IDs from AI response</div>';
+                }
 
             } else if (promptMatch && role === 'assistant') {
                 // === PROMPT BUILDER CARD ===

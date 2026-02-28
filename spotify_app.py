@@ -692,9 +692,37 @@ def create_playlist_api():
         return jsonify({'error': 'No data provided'}), 400
 
     playlist_name = data.get('name', 'Playlist Buddy Mix')
-    song_ids = data.get('song_ids', [])
-    if not song_ids:
+    raw_song_ids = data.get('song_ids', [])
+    if not raw_song_ids:
         return jsonify({'error': 'No songs provided'}), 400
+
+    # Validate IDs against our cache — only send songs we know exist
+    # This prevents 400 errors from malformed IDs the AI might generate
+    import re
+    spotify_id_pattern = re.compile(r'^[0-9A-Za-z]{22}$')
+    
+    user_id = session.get('spotify_user_id', '')
+    all_songs = full_library_cache.get(user_id, [])
+    valid_ids_in_cache = {s['id'] for s in all_songs}
+    
+    song_ids = []
+    for raw_id in raw_song_ids:
+        # Extract a 22-char alphanumeric Spotify ID from whatever the AI output
+        clean_id = raw_id.strip()
+        match = re.search(r'[0-9A-Za-z]{22}', clean_id)
+        if match:
+            extracted = match.group()
+            if extracted in valid_ids_in_cache:
+                song_ids.append(extracted)
+            else:
+                logger.warning(f"Song ID not in user's library cache: {extracted}")
+        else:
+            logger.warning(f"Could not extract valid Spotify ID from: {raw_id}")
+    
+    if not song_ids:
+        return jsonify({'error': 'None of the song IDs matched your library. Try asking the AI to pick songs again.'}), 400
+    
+    logger.info(f"Validated {len(song_ids)} of {len(raw_song_ids)} song IDs")
 
     # Convert IDs to URIs (Spotify needs "spotify:track:ID" format)
     track_uris = [f"spotify:track:{tid}" for tid in song_ids]
