@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/playlist_buddy_logo.png" type="image/png">
+    <title>Playlist Buddy — Beef Up Your Playlists</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #1DB954;
+            --green-glow: #1ed760;
+            --green-dim: rgba(29,185,84,0.12);
+            --bg: #0a0a0f;
+            --bg-surface: #111117;
+            --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.07);
+            --text: #e8e6e3;
+            --text-dim: #8a8680;
+            --text-muted: #5a5854;
+            --radius: 16px;
+            --orange: #f97316;
+            --orange-glow: #fb923c;
+            --orange-dim: rgba(249,115,22,0.12);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        .bg-orb { position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(80px); }
+        .bg-orb.one { top:-20%; left:-10%; width:50vw; height:50vw; background:rgba(29,185,84,0.06); }
+        .bg-orb.two { bottom:-30%; right:-15%; width:45vw; height:45vw; background:rgba(249,115,22,0.04); }
+        .page { position:relative; z-index:1; }
+
+        /* Header */
+        .header { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(17,17,23,0.85); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; }
+        .header-left { display:flex; align-items:center; gap:14px; }
+        .app-name { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; background:linear-gradient(135deg,var(--green),#17d9a0); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .lib-badge { font-family:'Space Mono',monospace; font-size:0.65rem; letter-spacing:0.05em; text-transform:uppercase; padding:4px 10px; border-radius:100px; background:var(--green-dim); color:var(--green); border:1px solid rgba(29,185,84,0.2); }
+        .lib-badge.loading { color:var(--text-dim); background:rgba(255,255,255,0.05); border-color:var(--border); }
+        .header-right { display:flex; align-items:center; gap:10px; }
+        .user-info { display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-dim); }
+        .user-avatar { width:28px; height:28px; border-radius:50%; object-fit:cover; }
+        .hdr-btn { font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--text-dim); background:none; border:1px solid var(--border); padding:6px 14px; border-radius:100px; cursor:pointer; text-decoration:none; transition:all .2s; }
+        .hdr-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.2); }
+
+        /* Hero / Welcome */
+        .hero { text-align:center; max-width:700px; margin:0 auto; padding:60px 24px 20px; }
+        .hero h1 { font-family:'Syne',sans-serif; font-size:clamp(1.8rem,5vw,2.8rem); font-weight:800; line-height:1.1; letter-spacing:-0.03em; margin-bottom:14px; }
+        .hero h1 .accent { background:linear-gradient(135deg,var(--orange),var(--green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .hero-sub { font-size:1rem; color:var(--text-dim); line-height:1.6; max-width:480px; margin:0 auto; }
+
+        /* Loading */
+        .loading-area { display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:28px; min-height:60px; }
+        .spinner { width:40px; height:40px; border:3px solid rgba(29,185,84,0.15); border-top-color:var(--green); border-radius:50%; animation:spin 1s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .load-msg { font-size:0.88rem; color:var(--green); animation:fadeUp .4s ease; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+        /* Sort bar */
+        .toolbar { max-width:1100px; margin:24px auto 16px; padding:0 24px; display:flex; align-items:center; justify-content:space-between; }
+        .toolbar-title { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; }
+        .sort-group { display:flex; align-items:center; gap:6px; }
+        .sort-btn { font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:600; color:var(--text-muted); background:none; border:1px solid var(--border); padding:5px 14px; border-radius:100px; cursor:pointer; transition:all .2s; }
+        .sort-btn:hover { color:var(--text-dim); border-color:rgba(255,255,255,0.15); }
+        .sort-btn.active { color:var(--green); border-color:rgba(29,185,84,0.3); background:var(--green-dim); }
+
+        /* Playlist Grid */
+        .grid { max-width:1100px; margin:0 auto; padding:0 24px 40px; display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px; }
+        .pl-card { background:var(--bg-surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer; transition:all .25s; }
+        .pl-card:hover { border-color:rgba(29,185,84,0.3); transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,0,0,0.3); }
+        .pl-card-img { width:100%; aspect-ratio:1; object-fit:cover; background:rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:center; }
+        .pl-card-img img { width:100%; height:100%; object-fit:cover; }
+        .pl-card-img .no-img { font-size:2.5rem; opacity:0.3; }
+        .pl-card-info { padding:12px 14px; }
+        .pl-card-name { font-family:'Syne',sans-serif; font-size:0.88rem; font-weight:700; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .pl-card-meta { font-size:0.72rem; color:var(--text-muted); }
+
+        /* === STEP PANELS (genre selection, results) === */
+        .panel-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(4px); z-index:200; justify-content:center; align-items:flex-start; padding:40px 20px; overflow-y:auto; }
+        .panel-overlay.open { display:flex; }
+        .panel { background:var(--bg-surface); border:1px solid var(--border); border-radius:20px; max-width:700px; width:100%; max-height:calc(100vh - 80px); overflow-y:auto; box-shadow:0 24px 80px rgba(0,0,0,0.5); animation:panelIn .3s ease-out; }
+        @keyframes panelIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .panel::-webkit-scrollbar { width:5px; }
+        .panel::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:3px; }
+        .panel-top { display:flex; align-items:center; justify-content:space-between; padding:24px 28px 18px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg-surface); border-radius:20px 20px 0 0; z-index:1; }
+        .panel-top h2 { font-family:'Syne',sans-serif; font-size:1.15rem; font-weight:800; }
+        .panel-close { width:32px; height:32px; border-radius:50%; border:1px solid var(--border); background:none; color:var(--text-dim); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+        .panel-close:hover { background:rgba(255,255,255,0.08); color:var(--text); }
+        .panel-body { padding:24px 28px; }
+
+        /* Selected playlist header */
+        .sel-pl { display:flex; gap:16px; margin-bottom:24px; align-items:center; }
+        .sel-pl-img { width:80px; height:80px; border-radius:10px; object-fit:cover; background:var(--bg-card); flex-shrink:0; }
+        .sel-pl-name { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:700; }
+        .sel-pl-meta { font-size:0.82rem; color:var(--text-dim); margin-top:4px; }
+
+        /* Genre chips */
+        .genre-section { margin-bottom:24px; }
+        .genre-section-title { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+        .genre-section-title .badge { font-family:'Space Mono',monospace; font-size:0.6rem; padding:2px 8px; border-radius:100px; background:var(--green-dim); color:var(--green); }
+        .genre-chips { display:flex; flex-wrap:wrap; gap:8px; }
+        .genre-chip { font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; padding:8px 18px; border-radius:100px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-dim); cursor:pointer; transition:all .2s; user-select:none; }
+        .genre-chip:hover { border-color:rgba(255,255,255,0.15); color:var(--text); }
+        .genre-chip.selected { border-color:rgba(249,115,22,0.5); background:var(--orange-dim); color:var(--orange); }
+        .genre-chip .chip-count { font-family:'Space Mono',monospace; font-size:0.65rem; margin-left:6px; opacity:0.6; }
+
+        /* Sub-genre section under each main */
+        .sub-genre-group { margin-left:12px; margin-bottom:16px; padding-left:12px; border-left:2px solid rgba(255,255,255,0.05); }
+        .sub-label { font-size:0.72rem; color:var(--text-muted); margin-bottom:8px; font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:0.06em; }
+
+        /* Beef up button */
+        .beef-btn { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:16px 28px; font-family:'Syne',sans-serif; font-size:1.05rem; font-weight:700; color:#fff; background:var(--orange); border:none; border-radius:14px; cursor:pointer; transition:all .25s; margin-top:8px; }
+        .beef-btn:hover { background:var(--orange-glow); transform:translateY(-1px); box-shadow:0 4px 24px rgba(249,115,22,0.3); }
+        .beef-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+        .beef-btn.success { background:var(--green); }
+
+        /* Results panel */
+        .results-count { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; margin-bottom:4px; }
+        .results-sub { font-size:0.88rem; color:var(--text-dim); margin-bottom:20px; }
+        .results-list { max-height:400px; overflow-y:auto; border:1px solid rgba(255,255,255,0.05); border-radius:12px; background:rgba(0,0,0,0.2); margin-bottom:20px; }
+        .results-list::-webkit-scrollbar { width:4px; }
+        .results-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+        .res-item { display:flex; align-items:center; gap:10px; padding:8px 14px; font-size:0.82rem; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .res-item:last-child { border-bottom:none; }
+        .res-num { font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--text-muted); min-width:28px; text-align:right; }
+        .res-name { color:var(--text); }
+        .res-sep { color:var(--text-muted); margin:0 4px; }
+        .res-artist { color:var(--text-dim); font-size:0.78rem; }
+        .confirm-btn { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:16px 28px; font-family:'Syne',sans-serif; font-size:1.05rem; font-weight:700; color:#000; background:var(--green); border:none; border-radius:14px; cursor:pointer; transition:all .25s; }
+        .confirm-btn:hover { background:var(--green-glow); transform:translateY(-1px); }
+        .confirm-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+        .confirm-btn.done { background:var(--green); }
+
+        /* Analyzing spinner */
+        .analyzing { display:flex; flex-direction:column; align-items:center; gap:12px; padding:40px 20px; }
+
+        /* Footer */
+        footer { text-align:center; padding:40px 24px 32px; font-size:0.78rem; color:var(--text-muted); }
+        footer a { color:var(--text-dim); text-decoration:none; }
+        footer a:hover { color:var(--text); }
+
+        @media (max-width:700px) {
+            .grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; }
+            .toolbar { flex-direction:column; gap:12px; align-items:flex-start; }
+            .header { padding:12px 16px; }
+            .user-info span { display:none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orb one"></div>
+    <div class="bg-orb two"></div>
+    <div class="page">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <span class="app-name">Playlist Buddy</span>
+                <span class="lib-badge loading" id="libBadge">Loading...</span>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    {% if avatar %}<img src="{{ avatar }}" class="user-avatar">{% endif %}
+                    <span>{{ username }}</span>
+                </div>
+                <a href="/classic" class="hdr-btn">Classic Mode</a>
+                <a href="/logout" class="hdr-btn">Disconnect</a>
+            </div>
+        </div>
+
+        <!-- Hero -->
+        <section class="hero">
+            <h1>Which playlist needs<br><span class="accent">beefing up?</span></h1>
+            <p class="hero-sub">Pick a playlist below. We'll analyze its genres and find every matching song in your library to add to it.</p>
+            <div class="loading-area" id="loadingArea">
+                <div class="spinner" id="spinner"></div>
+                <div class="load-msg" id="loadMsg">Scanning your library...</div>
+            </div>
+        </section>
+
+        <!-- Sort toolbar -->
+        <div class="toolbar" id="toolbar" style="display:none;">
+            <div class="toolbar-title" id="toolbarTitle">Your Playlists</div>
+            <div class="sort-group">
+                <button class="sort-btn active" data-sort="recent" onclick="sortPlaylists('recent')">Recent</button>
+                <button class="sort-btn" data-sort="name" onclick="sortPlaylists('name')">A–Z</button>
+                <button class="sort-btn" data-sort="tracks" onclick="sortPlaylists('tracks')">Most Songs</button>
+            </div>
+        </div>
+
+        <!-- Playlist Grid -->
+        <div class="grid" id="playlistGrid"></div>
+
+        <!-- Genre Selection Panel -->
+        <div class="panel-overlay" id="genreOverlay" onclick="if(event.target===this)closeGenrePanel()">
+            <div class="panel">
+                <div class="panel-top">
+                    <h2 id="genrePanelTitle">Analyze Genres</h2>
+                    <button class="panel-close" onclick="closeGenrePanel()">✕</button>
+                </div>
+                <div class="panel-body" id="genrePanelBody">
+                    <div class="analyzing" id="analyzingState">
+                        <div class="spinner"></div>
+                        <div class="load-msg">Analyzing playlist genres...</div>
+                    </div>
+                    <div id="genreContent" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="panel-overlay" id="resultsOverlay" onclick="if(event.target===this)closeResultsPanel()">
+            <div class="panel">
+                <div class="panel-top">
+                    <h2>Beefed Up!</h2>
+                    <button class="panel-close" onclick="closeResultsPanel()">✕</button>
+                </div>
+                <div class="panel-body" id="resultsPanelBody"></div>
+            </div>
+        </div>
+
+        <footer>
+            Your data stays between you and the app. We never store your Spotify credentials.
+            <br><br>
+            <a href="/classic">Classic Mode (Prompt Builder & Playlist Creator)</a> · <a href="https://github.com/reef111qq/playlist-buddy">GitHub</a>
+        </footer>
+    </div>
+
+<script>
+// === STATE ===
+let playlists = [];
+let currentSort = 'recent';
+let selectedPlaylist = null;
+let genreData = null;
+let selectedGenres = new Set();
+let beefUpResults = null;
+
+// === INIT ===
+window.addEventListener('DOMContentLoaded', () => {
+    loadLibrary();
+});
+
+// === LIBRARY LOADING ===
+const loadMsgs = [
+    "Scanning your library...",
+    "Judging your taste (just kidding)... 🤨",
+    "Reading every playlist name...",
+    "Almost there...",
+    "Your library is huge — respect 🎧",
+];
+let msgIdx = 0, msgInt = null;
+
+function startLoadMsgs() {
+    msgInt = setInterval(() => {
+        msgIdx = (msgIdx + 1) % loadMsgs.length;
+        const el = document.getElementById('loadMsg');
+        el.style.animation = 'none'; el.offsetHeight;
+        el.style.animation = 'fadeUp .4s ease';
+        el.textContent = loadMsgs[msgIdx];
+    }, 3500);
+}
+
+function loadLibrary() {
+    startLoadMsgs();
+    fetch('/api/load-library')
+        .then(r => { if (r.status === 401) { window.location.href = '/'; return; } return r.json(); })
+        .then(data => {
+            if (!data) return;
+            clearInterval(msgInt);
+            document.getElementById('loadingArea').style.display = 'none';
+            document.getElementById('libBadge').textContent = data.total_songs + ' songs';
+            document.getElementById('libBadge').classList.remove('loading');
+            loadPlaylists();
+        })
+        .catch(err => {
+            clearInterval(msgInt);
+            document.getElementById('loadMsg').textContent = '⚠ Failed to load library';
+            document.getElementById('loadMsg').style.color = '#ff6b6b';
+            document.getElementById('spinner').style.display = 'none';
+        });
+}
+
+function loadPlaylists() {
+    fetch('/api/playlists')
+        .then(r => r.json())
+        .then(data => {
+            playlists = data.playlists || [];
+            document.getElementById('toolbar').style.display = 'flex';
+            document.getElementById('toolbarTitle').textContent = playlists.length + ' Playlists';
+            renderGrid();
+        });
+}
+
+// === PLAYLIST GRID ===
+function renderGrid() {
+    const sorted = [...playlists];
+    if (currentSort === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name));
+    else if (currentSort === 'tracks') sorted.sort((a, b) => b.tracks - a.tracks);
+    // 'recent' = default order from Spotify (already recent-first)
+
+    const grid = document.getElementById('playlistGrid');
+    grid.innerHTML = sorted.map(p => `
+        <div class="pl-card" onclick="selectPlaylist('${p.id}')">
+            <div class="pl-card-img">
+                ${p.image ? `<img src="${p.image}" alt="${esc(p.name)}">` : '<div class="no-img">🎵</div>'}
+            </div>
+            <div class="pl-card-info">
+                <div class="pl-card-name">${esc(p.name)}</div>
+                <div class="pl-card-meta">${p.tracks} tracks</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function sortPlaylists(sort) {
+    currentSort = sort;
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === sort));
+    renderGrid();
+}
+
+// === SELECT PLAYLIST → ANALYZE GENRES ===
+function selectPlaylist(pid) {
+    selectedPlaylist = playlists.find(p => p.id === pid);
+    if (!selectedPlaylist) return;
+
+    selectedGenres.clear();
+    genreData = null;
+
+    // Show genre panel with loading state
+    document.getElementById('analyzingState').style.display = 'flex';
+    document.getElementById('genreContent').style.display = 'none';
+    document.getElementById('genrePanelTitle').textContent = selectedPlaylist.name;
+    document.getElementById('genreOverlay').classList.add('open');
+
+    // Analyze
+    fetch('/api/analyze-playlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playlist_id: pid }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        genreData = data;
+        document.getElementById('analyzingState').style.display = 'none';
+        document.getElementById('genreContent').style.display = 'block';
+        renderGenreSelection(data);
+    })
+    .catch(err => {
+        document.getElementById('analyzingState').innerHTML =
+            '<div style="color:#ff6b6b;font-size:0.9rem;">Failed to analyze genres. Try again.</div>';
+    });
+}
+
+function renderGenreSelection(data) {
+    const c = document.getElementById('genreContent');
+    let html = '';
+
+    // Playlist header
+    html += `<div class="sel-pl">
+        ${selectedPlaylist.image ? `<img src="${selectedPlaylist.image}" class="sel-pl-img">` : ''}
+        <div>
+            <div class="sel-pl-name">${esc(selectedPlaylist.name)}</div>
+            <div class="sel-pl-meta">${data.total_tracks} tracks · ${Object.keys(data.main_genres).length} genres detected</div>
+        </div>
+    </div>`;
+
+    // Genre selection instructions
+    html += `<div style="font-size:0.88rem;color:var(--text-dim);margin-bottom:20px;line-height:1.5;">
+        Select the genres you want to beef up this playlist with. We'll search your entire library for matching songs.
+    </div>`;
+
+    // Main genres with sub-genres nested
+    const mainGenres = Object.entries(data.main_genres).sort((a, b) => b[1] - a[1]);
+
+    for (const [main, count] of mainGenres) {
+        const subGenres = data.sub_genres[main] || [];
+        html += `<div class="genre-section">`;
+        html += `<div class="genre-section-title">${main} <span class="badge">${count} tracks</span></div>`;
+        html += `<div class="genre-chips">`;
+        for (const sg of subGenres) {
+            html += `<div class="genre-chip" data-genre="${esc(sg.name)}" onclick="toggleGenre(this, '${esc(sg.name)}')">
+                ${esc(sg.name)}<span class="chip-count">${sg.count}</span>
+            </div>`;
+        }
+        html += `</div></div>`;
+    }
+
+    // Beef Up button
+    html += `<button class="beef-btn" id="beefBtn" onclick="doBeefUp()" disabled>
+        Select genres to beef up
+    </button>`;
+
+    c.innerHTML = html;
+}
+
+function toggleGenre(el, genre) {
+    if (selectedGenres.has(genre)) {
+        selectedGenres.delete(genre);
+        el.classList.remove('selected');
+    } else {
+        selectedGenres.add(genre);
+        el.classList.add('selected');
+    }
+
+    const btn = document.getElementById('beefBtn');
+    if (selectedGenres.size > 0) {
+        btn.disabled = false;
+        btn.textContent = `🔥 Beef Up with ${selectedGenres.size} genre${selectedGenres.size > 1 ? 's' : ''}`;
+    } else {
+        btn.disabled = true;
+        btn.textContent = 'Select genres to beef up';
+    }
+}
+
+// === BEEF UP ===
+function doBeefUp() {
+    const btn = document.getElementById('beefBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Searching your library...';
+
+    fetch('/api/beef-up', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            playlist_id: selectedPlaylist.id,
+            selected_genres: Array.from(selectedGenres),
+        }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) {
+            btn.disabled = false;
+            btn.textContent = `🔥 Beef Up with ${selectedGenres.size} genre${selectedGenres.size > 1 ? 's' : ''}`;
+            alert(data.error || 'Something went wrong');
+            return;
+        }
+
+        beefUpResults = data;
+        closeGenrePanel();
+        showResults(data);
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.textContent = `🔥 Beef Up with ${selectedGenres.size} genre${selectedGenres.size > 1 ? 's' : ''}`;
+    });
+}
+
+// === RESULTS ===
+function showResults(data) {
+    const body = document.getElementById('resultsPanelBody');
+    let html = '';
+
+    if (data.songs.length === 0) {
+        html = `<div style="text-align:center;padding:40px 20px;">
+            <div style="font-size:2rem;margin-bottom:12px;">🤷</div>
+            <div class="results-count">No new songs found</div>
+            <div class="results-sub">Your library doesn't have any additional songs matching those genres that aren't already in this playlist.</div>
+        </div>`;
+    } else {
+        html += `<div class="results-count">${data.songs.length} songs found</div>`;
+        html += `<div class="results-sub">These songs from your library match the selected genres and aren't already in <strong>${esc(selectedPlaylist.name)}</strong>.</div>`;
+
+        html += `<div class="results-list">`;
+        data.songs.forEach((s, i) => {
+            html += `<div class="res-item">
+                <span class="res-num">${i + 1}</span>
+                <span class="res-name">${esc(s.name)}</span>
+                <span class="res-sep">·</span>
+                <span class="res-artist">${esc(s.artist)}</span>
+            </div>`;
+        });
+        html += `</div>`;
+
+        html += `<button class="confirm-btn" id="confirmBtn" onclick="confirmBeefUp()">
+            🔥 Add ${data.songs.length} songs to "${esc(selectedPlaylist.name)}"
+        </button>`;
+        html += `<div id="confirmStatus"></div>`;
+    }
+
+    body.innerHTML = html;
+    document.getElementById('resultsOverlay').classList.add('open');
+}
+
+function confirmBeefUp() {
+    if (!beefUpResults || !beefUpResults.songs.length) return;
+
+    const btn = document.getElementById('confirmBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Adding songs...';
+
+    fetch('/api/confirm-beef-up', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            playlist_id: selectedPlaylist.id,
+            song_ids: beefUpResults.songs.map(s => s.id),
+        }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            btn.className = 'confirm-btn done';
+            btn.textContent = `✓ Added ${data.added_count} songs!`;
+            document.getElementById('confirmStatus').innerHTML =
+                `<div style="text-align:center;margin-top:12px;font-size:0.88rem;color:var(--green);">
+                    Open Spotify to see your beefed-up playlist!
+                </div>`;
+        } else {
+            btn.disabled = false;
+            btn.textContent = `🔥 Add songs to playlist`;
+            document.getElementById('confirmStatus').innerHTML =
+                `<div style="text-align:center;margin-top:8px;font-size:0.82rem;color:#ff6b6b;">${data.error || 'Failed'}</div>`;
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.textContent = `🔥 Add songs to playlist`;
+    });
+}
+
+// === HELPERS ===
+function closeGenrePanel() { document.getElementById('genreOverlay').classList.remove('open'); }
+function closeResultsPanel() { document.getElementById('resultsOverlay').classList.remove('open'); }
+function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeGenrePanel(); closeResultsPanel(); }
+});
+</script>
+</body>
+</html>
