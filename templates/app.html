@@ -262,10 +262,36 @@ function startLoadMsgs() {
 
 function loadLibrary() {
     startLoadMsgs();
+    pollLibrary();
+}
+
+function pollLibrary() {
     fetch('/api/load-library')
         .then(r => { if (r.status === 401) { window.location.href = '/'; return; } return r.json(); })
         .then(data => {
             if (!data) return;
+
+            if (data.status === 'loading') {
+                // Still loading — update message and poll again in 2 seconds
+                const el = document.getElementById('loadMsg');
+                if (data.message) {
+                    el.style.animation = 'none'; el.offsetHeight;
+                    el.style.animation = 'fadeUp .4s ease';
+                    el.textContent = data.message;
+                }
+                setTimeout(pollLibrary, 2000);
+                return;
+            }
+
+            if (data.status === 'error') {
+                clearInterval(msgInt);
+                document.getElementById('loadMsg').textContent = '⚠ ' + (data.message || 'Failed to load library');
+                document.getElementById('loadMsg').style.color = '#ff6b6b';
+                document.getElementById('spinner').style.display = 'none';
+                return;
+            }
+
+            // status === 'ready'
             clearInterval(msgInt);
             document.getElementById('loadingArea').style.display = 'none';
             document.getElementById('libBadge').textContent = data.total_songs + ' songs';

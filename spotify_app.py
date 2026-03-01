@@ -1,16 +1,11 @@
 """
 Playlist Buddy — "Beef Up" Your Playlists
 ==========================================
-IMPORTANT: As of Feb 2026, many Spotipy methods are broken because
-Spotify renamed/removed endpoints. This code uses direct HTTP calls
-for anything that Spotipy can't handle:
-  - GET /playlists/{id}/tracks → now /playlists/{id}/items
-  - GET /artists (batch) → REMOVED, must fetch individually
-  - POST /users/{id}/playlists → now POST /me/playlists
-  - tracks field → items field in playlist responses
+IMPORTANT: Library loading runs in a background thread to avoid
+gunicorn worker timeouts. Frontend polls /api/load-library for status.
 """
 
-import os, json, re, logging
+import os, json, re, logging, threading
 from collections import Counter, defaultdict
 from flask import Flask, session, request, redirect, url_for, render_template, jsonify
 from spotipy import Spotify
@@ -24,10 +19,14 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(64))
 
+# Server-side caches keyed by Spotify user ID
 library_cache = {}
 full_library_cache = {}
 playlists_cache = {}
 artist_genre_index_cache = {}
+
+# Track background loading state: user_id -> {'status': 'loading'|'ready'|'error', 'message': '...'}
+loading_state = {}
 
 CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
 CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
@@ -59,9 +58,6 @@ def get_access_token():
         ch.save_token_to_cache(ti)
     return ti['access_token']
 
-def auth_headers():
-    return {"Authorization": f"Bearer {get_access_token()}", "Content-Type": "application/json"}
-
 def is_authenticated():
     ch = FlaskSessionCacheHandler(session)
     oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
@@ -70,66 +66,66 @@ def is_authenticated():
 
 
 # ─── Direct API helpers ───
+# These take an explicit token so they work from background threads
+# (background threads can't access Flask session)
 
-def api_get(path, params=None):
+def make_auth_headers(token):
+    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+def api_get(token, path, params=None):
     try:
-        r = http_requests.get(f"{API_BASE}{path}", headers=auth_headers(), params=params, timeout=30)
+        r = http_requests.get(f"{API_BASE}{path}", headers=make_auth_headers(token), params=params, timeout=30)
         r.raise_for_status()
         return r.json()
     except Exception as e:
         logger.error(f"API GET {path}: {e}")
         return None
 
-def api_get_url(url):
-    """GET a full URL (for pagination 'next' links)."""
+def api_get_url(token, url):
     try:
-        r = http_requests.get(url, headers=auth_headers(), timeout=30)
+        r = http_requests.get(url, headers=make_auth_headers(token), timeout=30)
         r.raise_for_status()
         return r.json()
     except Exception as e:
-        logger.error(f"API GET {url}: {e}")
+        logger.error(f"API GET url: {e}")
         return None
 
-def api_post(path, data=None):
-    r = http_requests.post(f"{API_BASE}{path}", headers=auth_headers(), json=data, timeout=30)
+def api_post(token, path, data=None):
+    r = http_requests.post(f"{API_BASE}{path}", headers=make_auth_headers(token), json=data, timeout=30)
     r.raise_for_status()
     return r.json() if r.content else {}
 
 
 # ─── Library Fetching ───
+# All fetch functions take an explicit token for thread safety
 
-def fetch_all_liked_songs(sp):
-    """Uses Spotipy — GET /me/tracks still works."""
+def fetch_all_liked_songs_direct(token):
+    """GET /me/tracks — fetch all liked songs."""
     songs = []
-    try:
-        results = sp.current_user_saved_tracks(limit=50)
-        while results:
-            for item in results.get('items', []):
-                t = item.get('track')
-                if not t or not t.get('id'): continue
-                songs.append({
-                    'id': t['id'], 'uri': t['uri'], 'name': t['name'],
-                    'artist': t['artists'][0]['name'] if t.get('artists') else 'Unknown',
-                    'all_artist_ids': [a['id'] for a in t.get('artists', []) if a.get('id')],
-                    'album': t['album']['name'] if t.get('album') else 'Unknown',
-                })
-            results = sp.next(results) if results.get('next') else None
-    except Exception as e:
-        logger.error(f"Liked songs error: {e}")
+    data = api_get(token, "/me/tracks", params={"limit": 50})
+    while data:
+        for item in data.get('items', []):
+            t = item.get('track')
+            if not t or not t.get('id'): continue
+            songs.append({
+                'id': t['id'], 'uri': t['uri'], 'name': t['name'],
+                'artist': t['artists'][0]['name'] if t.get('artists') else 'Unknown',
+                'all_artist_ids': [a['id'] for a in t.get('artists', []) if a.get('id')],
+                'album': t['album']['name'] if t.get('album') else 'Unknown',
+            })
+        next_url = data.get('next')
+        data = api_get_url(token, next_url) if next_url else None
     logger.info(f"Liked songs: {len(songs)}")
     return songs
 
 
-def fetch_playlist_items_direct(playlist_id):
-    """
-    GET /playlists/{id}/items (NEW endpoint, replaces /tracks)
-    Response field: 'item' instead of 'track'
-    """
+def fetch_playlist_items_direct(token, playlist_id):
+    """GET /playlists/{id}/items (new Feb 2026 endpoint)."""
     songs = []
-    data = api_get(f"/playlists/{playlist_id}/items", params={"limit": 50})
+    data = api_get(token, f"/playlists/{playlist_id}/items", params={"limit": 50})
     while data:
         for entry in data.get('items', []):
-            t = entry.get('item') or entry.get('track')  # 'item' is new, 'track' is fallback
+            t = entry.get('item') or entry.get('track')
             if not t or not t.get('id'): continue
             songs.append({
                 'id': t['id'],
@@ -140,20 +136,19 @@ def fetch_playlist_items_direct(playlist_id):
                 'album': t['album']['name'] if t.get('album') else 'Unknown',
             })
         next_url = data.get('next')
-        data = api_get_url(next_url) if next_url else None
+        data = api_get_url(token, next_url) if next_url else None
     return songs
 
 
-def fetch_all_playlist_songs():
-    """Fetch all playlists + their songs using direct API calls."""
+def fetch_all_playlist_songs_direct(token):
+    """Fetch all playlists and their songs."""
     all_songs, pl_meta = [], []
-    data = api_get("/me/playlists", params={"limit": 50})
+    data = api_get(token, "/me/playlists", params={"limit": 50})
     while data:
         for item in data.get('items', []):
             if not item: continue
             pid = item.get('id')
             pname = item.get('name', 'Untitled')
-            # Feb 2026: 'tracks' → 'items' in playlist object
             items_info = item.get('items') or item.get('tracks') or {}
             tcount = items_info.get('total', 0)
             imgs = item.get('images', [])
@@ -165,39 +160,37 @@ def fetch_all_playlist_songs():
             })
             if pid and tcount > 0:
                 try:
-                    pl_songs = fetch_playlist_items_direct(pid)
+                    pl_songs = fetch_playlist_items_direct(token, pid)
                     for s in pl_songs: s['source'] = f'playlist:{pname}'
                     all_songs.extend(pl_songs)
                 except Exception as e:
                     logger.error(f"Items for '{pname}': {e}")
         next_url = data.get('next')
-        data = api_get_url(next_url) if next_url else None
-    logger.info(f"Playlists: {len(pl_meta)}, songs: {len(all_songs)}")
+        data = api_get_url(token, next_url) if next_url else None
+    logger.info(f"Playlists: {len(pl_meta)}, playlist songs: {len(all_songs)}")
     return all_songs, pl_meta
 
 
-def fetch_top_artists(sp):
+def fetch_top_artists_direct(token):
     artists = {}
     for tr in ['short_term', 'medium_term', 'long_term']:
-        try:
-            res = sp.current_user_top_artists(limit=50, time_range=tr)
-            for i, a in enumerate(res.get('items', [])):
+        data = api_get(token, f"/me/top/artists", params={"limit": 50, "time_range": tr})
+        if data:
+            for i, a in enumerate(data.get('items', [])):
                 if a.get('id') and a['id'] not in artists:
                     artists[a['id']] = {'name': a['name'], 'genres': a.get('genres', []), 'rank': i}
-        except Exception as e:
-            logger.error(f"Top artists ({tr}): {e}")
     return list(artists.values())
 
-def fetch_top_tracks(sp):
+
+def fetch_top_tracks_direct(token):
     tracks = []
-    try:
-        res = sp.current_user_top_tracks(limit=50, time_range='medium_term')
-        for t in res.get('items', []):
+    data = api_get(token, "/me/top/tracks", params={"limit": 50, "time_range": "medium_term"})
+    if data:
+        for t in data.get('items', []):
             if t and t.get('id'):
                 tracks.append({'name': t['name'], 'artist': t['artists'][0]['name'] if t.get('artists') else 'Unknown'})
-    except Exception as e:
-        logger.error(f"Top tracks: {e}")
     return tracks
+
 
 def deduplicate_songs(liked, playlist):
     seen, unique = set(), []
@@ -206,13 +199,50 @@ def deduplicate_songs(liked, playlist):
     return unique
 
 
+# ─── Background library loader ───
+
+def load_library_background(user_id, token):
+    """
+    Runs in a background thread. Fetches the entire library and
+    stores results in the server-side caches.
+    """
+    try:
+        loading_state[user_id] = {'status': 'loading', 'message': 'Fetching liked songs...'}
+
+        liked = fetch_all_liked_songs_direct(token)
+        loading_state[user_id]['message'] = f'Found {len(liked)} liked songs. Fetching playlists...'
+
+        pl_songs, pl_meta = fetch_all_playlist_songs_direct(token)
+        loading_state[user_id]['message'] = f'Found {len(pl_meta)} playlists. Processing...'
+
+        top_a = fetch_top_artists_direct(token)
+        top_t = fetch_top_tracks_direct(token)
+
+        all_unique = deduplicate_songs(liked, pl_songs)
+        summary = summarize_library(all_unique, pl_meta, top_a, top_t)
+
+        library_cache[user_id] = summary
+        full_library_cache[user_id] = all_unique
+        playlists_cache[user_id] = pl_meta
+
+        loading_state[user_id] = {
+            'status': 'ready',
+            'total_songs': len(all_unique),
+            'total_playlists': len(pl_meta),
+        }
+        logger.info(f"Library loaded for {user_id}: {len(all_unique)} songs, {len(pl_meta)} playlists")
+
+    except Exception as e:
+        logger.error(f"Background load failed for {user_id}: {e}")
+        loading_state[user_id] = {'status': 'error', 'message': str(e)}
+
+
 # ─── Artist Genre Fetching (batch REMOVED, fetch individually) ───
 
-def fetch_artist_genres_batch(artist_ids):
-    """Fetch genres one artist at a time (GET /artists/{id})."""
+def fetch_artist_genres_batch(token, artist_ids):
     result = {}
     for aid in artist_ids:
-        data = api_get(f"/artists/{aid}")
+        data = api_get(token, f"/artists/{aid}")
         if data and data.get('id'):
             result[data['id']] = data.get('genres', [])
     return result
@@ -242,16 +272,16 @@ def classify_genre(raw):
         if k in low: return v
     return 'Other'
 
-def analyze_playlist_genres(playlist_id):
+def analyze_playlist_genres(token, playlist_id):
     artist_ids = set()
     track_artists = []
-    songs = fetch_playlist_items_direct(playlist_id)
+    songs = fetch_playlist_items_direct(token, playlist_id)
     for s in songs:
         aids = s.get('all_artist_ids', [])
         artist_ids.update(aids)
         track_artists.append((s['id'], aids))
     logger.info(f"Analyzing: {len(songs)} tracks, {len(artist_ids)} artists")
-    ag = fetch_artist_genres_batch(list(artist_ids))
+    ag = fetch_artist_genres_batch(token, list(artist_ids))
     main_counts, sub_counts = Counter(), Counter()
     for _, aids in track_artists:
         for aid in aids:
@@ -263,11 +293,11 @@ def analyze_playlist_genres(playlist_id):
         grouped[classify_genre(sg)].append({'name': sg, 'count': c})
     return {'main_genres': dict(main_counts.most_common()), 'sub_genres': dict(grouped), 'total_tracks': len(track_artists)}
 
-def build_artist_genre_index(all_songs):
+def build_artist_genre_index(token, all_songs):
     aids = set()
     for s in all_songs: aids.update(s.get('all_artist_ids', []))
     logger.info(f"Genre index: fetching {len(aids)} artists individually")
-    return fetch_artist_genres_batch(list(aids))
+    return fetch_artist_genres_batch(token, list(aids))
 
 
 # ─── Beef Up ───
@@ -284,8 +314,8 @@ def find_matching_songs(all_songs, selected_genres, existing_ids, genre_index):
         if sg & sel: matches.append(s)
     return matches
 
-def get_playlist_track_ids(playlist_id):
-    return [s['id'] for s in fetch_playlist_items_direct(playlist_id)]
+def get_playlist_track_ids(token, playlist_id):
+    return [s['id'] for s in fetch_playlist_items_direct(token, playlist_id)]
 
 
 # ─── Summarization (legacy) ───
@@ -322,17 +352,8 @@ def chat_with_llm(messages, system_prompt):
 
 def _ensure_library_loaded(uid):
     if uid in library_cache and uid in full_library_cache: return True
-    try:
-        sp, _, _ = get_spotify()
-        user = sp.current_user(); uid = user['id']
-        liked = fetch_all_liked_songs(sp)
-        pls, plm = fetch_all_playlist_songs()
-        ta = fetch_top_artists(sp); tt = fetch_top_tracks(sp)
-        uniq = deduplicate_songs(liked, pls)
-        library_cache[uid] = summarize_library(uniq, plm, ta, tt)
-        full_library_cache[uid] = uniq; playlists_cache[uid] = plm
-        session['spotify_user_id'] = uid; return True
-    except: return False
+    # Can't rebuild in the background without a token — return False
+    return False
 
 
 # ─── Routes ───
@@ -371,44 +392,67 @@ def classic_page():
     return render_template('classic.html', username=un, avatar=av)
 
 
-# ─── API ───
+# ─── API: Library Loading (async) ───
 
 @app.route('/api/load-library')
 def load_library():
-    if not is_authenticated(): return jsonify({'error': 'Not authenticated'}), 401
-    sp, _, _ = get_spotify()
-    try:
-        user = sp.current_user(); user_id = user['id']
-    except Exception as e:
-        logger.error(f"User ID: {e}"); return jsonify({'error': 'Could not identify user'}), 500
+    """
+    Non-blocking library loader. On first call, starts a background thread.
+    Frontend polls this endpoint until status is 'ready'.
+    """
+    if not is_authenticated():
+        return jsonify({'error': 'Not authenticated'}), 401
 
-    if user_id in library_cache and user_id in full_library_cache:
-        return jsonify({'status': 'ready', 'total_songs': len(full_library_cache[user_id]),
-                        'total_playlists': len(playlists_cache.get(user_id, []))})
+    # Get token and user ID
+    token = get_access_token()
+    if not token:
+        return jsonify({'error': 'No valid token'}), 401
 
-    try: liked = fetch_all_liked_songs(sp)
-    except Exception as e: logger.error(f"Liked: {e}"); liked = []
-    try: pl_songs, pl_meta = fetch_all_playlist_songs()
-    except Exception as e: logger.error(f"Playlists: {e}"); pl_songs, pl_meta = [], []
-    try: top_a = fetch_top_artists(sp)
-    except Exception as e: logger.error(f"Top artists: {e}"); top_a = []
-    try: top_t = fetch_top_tracks(sp)
-    except Exception as e: logger.error(f"Top tracks: {e}"); top_t = []
-
-    all_unique = deduplicate_songs(liked, pl_songs)
-    library_cache[user_id] = summarize_library(all_unique, pl_meta, top_a, top_t)
-    full_library_cache[user_id] = all_unique
-    playlists_cache[user_id] = pl_meta
+    # Get user ID from /me
+    me = api_get(token, "/me")
+    if not me or not me.get('id'):
+        return jsonify({'error': 'Could not identify user'}), 500
+    user_id = me['id']
     session['spotify_user_id'] = user_id
-    logger.info(f"Loaded: {len(all_unique)} songs, {len(pl_meta)} playlists for {user_id}")
-    return jsonify({'status': 'ready', 'total_songs': len(all_unique), 'total_playlists': len(pl_meta)})
+
+    # Already loaded? Return immediately
+    if user_id in full_library_cache and user_id in library_cache:
+        return jsonify({
+            'status': 'ready',
+            'total_songs': len(full_library_cache[user_id]),
+            'total_playlists': len(playlists_cache.get(user_id, [])),
+        })
+
+    # Check if loading is in progress
+    state = loading_state.get(user_id)
+    if state:
+        if state['status'] == 'loading':
+            return jsonify({'status': 'loading', 'message': state.get('message', 'Loading...')})
+        elif state['status'] == 'ready':
+            return jsonify({
+                'status': 'ready',
+                'total_songs': state.get('total_songs', 0),
+                'total_playlists': state.get('total_playlists', 0),
+            })
+        elif state['status'] == 'error':
+            # Clear error so they can retry
+            loading_state.pop(user_id, None)
+            return jsonify({'status': 'error', 'message': state.get('message', 'Unknown error')})
+
+    # Start background loading
+    loading_state[user_id] = {'status': 'loading', 'message': 'Starting...'}
+    thread = threading.Thread(target=load_library_background, args=(user_id, token), daemon=True)
+    thread.start()
+
+    return jsonify({'status': 'loading', 'message': 'Starting library scan...'})
+
+
+# ─── API: Playlists ───
 
 @app.route('/api/playlists')
 def get_playlists():
     if not is_authenticated(): return jsonify({'error': 'Not authenticated'}), 401
     uid = session.get('spotify_user_id', '')
-    if not playlists_cache.get(uid) and not _ensure_library_loaded(uid):
-        return jsonify({'error': 'Library not loaded'}), 400
     return jsonify({'playlists': playlists_cache.get(uid, [])})
 
 @app.route('/api/analyze-playlist', methods=['POST'])
@@ -416,9 +460,9 @@ def analyze_playlist_route():
     if not is_authenticated(): return jsonify({'error': 'Not authenticated'}), 401
     pid = request.get_json().get('playlist_id')
     if not pid: return jsonify({'error': 'No playlist ID'}), 400
+    token = get_access_token()
     try:
-        a = analyze_playlist_genres(pid)
-        return jsonify(a)
+        return jsonify(analyze_playlist_genres(token, pid))
     except Exception as e:
         logger.error(f"Analyze: {e}"); return jsonify({'error': str(e)}), 500
 
@@ -427,15 +471,14 @@ def beef_up():
     if not is_authenticated(): return jsonify({'error': 'Not authenticated'}), 401
     uid = session.get('spotify_user_id', '')
     all_songs = full_library_cache.get(uid, [])
-    if not all_songs and not _ensure_library_loaded(uid):
-        return jsonify({'error': 'Library not loaded'}), 400
-    all_songs = full_library_cache.get(uid, [])
+    if not all_songs: return jsonify({'error': 'Library not loaded'}), 400
     data = request.get_json()
     pid, genres = data.get('playlist_id'), data.get('selected_genres', [])
     if not pid or not genres: return jsonify({'error': 'Missing data'}), 400
+    token = get_access_token()
     if uid not in artist_genre_index_cache:
-        artist_genre_index_cache[uid] = build_artist_genre_index(all_songs)
-    existing = get_playlist_track_ids(pid)
+        artist_genre_index_cache[uid] = build_artist_genre_index(token, all_songs)
+    existing = get_playlist_track_ids(token, pid)
     matches = find_matching_songs(all_songs, genres, existing, artist_genre_index_cache[uid])
     return jsonify({'success': True, 'added_count': len(matches),
                     'songs': [{'id': s['id'], 'name': s['name'], 'artist': s['artist']} for s in matches]})
@@ -446,20 +489,23 @@ def confirm_beef_up():
     data = request.get_json()
     pid, sids = data.get('playlist_id'), data.get('song_ids', [])
     if not pid or not sids: return jsonify({'error': 'Missing data'}), 400
+    token = get_access_token()
     try:
         uris = [f"spotify:track:{s}" for s in sids]
         for i in range(0, len(uris), 100):
-            api_post(f"/playlists/{pid}/items", {"uris": uris[i:i+100]})
+            api_post(token, f"/playlists/{pid}/items", {"uris": uris[i:i+100]})
         return jsonify({'success': True, 'added_count': len(sids)})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ─── API: Legacy Chat ───
 
 @app.route('/api/chat', methods=['POST'])
 def chat_api():
     if not is_authenticated(): return jsonify({'error': 'Not authenticated'}), 401
     uid = session.get('spotify_user_id', '')
-    if not library_cache.get(uid) and not _ensure_library_loaded(uid):
-        return jsonify({'error': 'Library not loaded'}), 400
+    if not library_cache.get(uid): return jsonify({'error': 'Library not loaded'}), 400
     return jsonify({'response': chat_with_llm(request.get_json().get('messages', [])[-20:],
         f"You are Playlist Buddy. Help write prompts for Spotify's AI.\n{library_cache[uid]}\nWrap in [PLAYLIST_PROMPT]...[/PLAYLIST_PROMPT].")})
 
@@ -467,8 +513,7 @@ def chat_api():
 def creator_chat_api():
     if not is_authenticated(): return jsonify({'error': 'Not authenticated'}), 401
     uid = session.get('spotify_user_id', '')
-    if not full_library_cache.get(uid) and not _ensure_library_loaded(uid):
-        return jsonify({'error': 'Library not loaded'}), 400
+    if not full_library_cache.get(uid): return jsonify({'error': 'Library not loaded'}), 400
     songs = full_library_cache[uid]
     sl = "\n".join(f"{s['id']} | {s['name']} — {s['artist']}" for s in songs)
     return jsonify({'response': chat_with_llm(request.get_json().get('messages', [])[-20:],
@@ -482,10 +527,11 @@ def create_playlist_api():
     valid = {s['id'] for s in full_library_cache.get(uid, [])}
     ids = [m.group() for r in data.get('song_ids', []) if (m := re.search(r'[0-9A-Za-z]{22}', r.strip())) and m.group() in valid]
     if not ids: return jsonify({'error': 'No valid songs'}), 400
+    token = get_access_token()
     try:
-        pl = api_post("/me/playlists", {"name": name, "public": True, "description": "Created by Playlist Buddy"})
+        pl = api_post(token, "/me/playlists", {"name": name, "public": True, "description": "Created by Playlist Buddy"})
         uris = [f"spotify:track:{i}" for i in ids]
-        for j in range(0, len(uris), 100): api_post(f"/playlists/{pl['id']}/items", {"uris": uris[j:j+100]})
+        for j in range(0, len(uris), 100): api_post(token, f"/playlists/{pl['id']}/items", {"uris": uris[j:j+100]})
         return jsonify({'success': True, 'playlist_url': pl['external_urls']['spotify'], 'playlist_name': name, 'track_count': len(ids)})
     except Exception as e: return jsonify({'error': str(e)}), 500
 
@@ -500,7 +546,7 @@ def song_details_api():
 @app.route('/logout')
 def logout():
     uid = session.get('spotify_user_id', '')
-    for c in [library_cache, full_library_cache, playlists_cache, artist_genre_index_cache]: c.pop(uid, None)
+    for c in [library_cache, full_library_cache, playlists_cache, artist_genre_index_cache, loading_state]: c.pop(uid, None)
     session.clear(); return redirect(url_for('home'))
 
 if __name__ == "__main__":
