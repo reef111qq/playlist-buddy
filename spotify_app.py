@@ -178,7 +178,7 @@ def fetch_top_artists_direct(token):
         if data:
             for i, a in enumerate(data.get('items', [])):
                 if a.get('id') and a['id'] not in artists:
-                    artists[a['id']] = {'name': a['name'], 'genres': a.get('genres', []), 'rank': i}
+                    artists[a['id']] = {'id': a['id'], 'name': a['name'], 'genres': a.get('genres', []), 'rank': i}
     return list(artists.values())
 
 
@@ -205,6 +205,7 @@ def load_library_background(user_id, token):
     """
     Runs in a background thread. Fetches the entire library and
     stores results in the server-side caches.
+    Also seeds the genre cache with top artists (free — no extra API calls).
     """
     try:
         loading_state[user_id] = {'status': 'loading', 'message': 'Fetching liked songs...'}
@@ -225,6 +226,16 @@ def load_library_background(user_id, token):
         full_library_cache[user_id] = all_unique
         playlists_cache[user_id] = pl_meta
 
+        # Seed genre cache with top artists — they already have genres
+        # from /me/top/artists, so this costs zero extra API calls
+        genre_seed = {}
+        for a in top_a:
+            aid = a.get('id')
+            if aid and a.get('genres'):
+                genre_seed[aid] = a['genres']
+        artist_genre_index_cache[user_id] = genre_seed
+        logger.info(f"Seeded genre cache with {len(genre_seed)} top artists")
+
         loading_state[user_id] = {
             'status': 'ready',
             'total_songs': len(all_unique),
@@ -241,36 +252,43 @@ def load_library_background(user_id, token):
 
 def fetch_artist_genres_batch(token, artist_ids):
     """Fetch genres for each artist individually.
-    Uses direct HTTP with rate limit handling instead of api_get
-    so a single 429 doesn't kill the whole batch.
+    - Caps rate-limit wait at 5 seconds (Spotify sometimes says wait 23 hours)
+    - Stops fetching if we get rate limited (returns what we have so far)
+    - Paces requests with small delays to avoid hitting limits
     """
     result = {}
+    rate_limited = False
     for i, aid in enumerate(artist_ids):
+        if rate_limited:
+            break
         try:
             r = http_requests.get(
                 f"{API_BASE}/artists/{aid}",
                 headers=make_auth_headers(token),
-                timeout=15
+                timeout=10
             )
             if r.status_code == 429:
-                wait = int(r.headers.get('Retry-After', 3))
-                logger.warning(f"Rate limited fetching artist {aid}, waiting {wait}s")
-                time.sleep(wait)
-                r = http_requests.get(
-                    f"{API_BASE}/artists/{aid}",
-                    headers=make_auth_headers(token),
-                    timeout=15
-                )
+                retry_after = int(r.headers.get('Retry-After', 5))
+                if retry_after > 5:
+                    # Spotify wants us to wait too long — stop fetching
+                    logger.warning(f"Rate limited with Retry-After={retry_after}s, stopping artist fetches. Got {len(result)}/{len(artist_ids)} so far.")
+                    rate_limited = True
+                    break
+                else:
+                    time.sleep(retry_after)
+                    r = http_requests.get(
+                        f"{API_BASE}/artists/{aid}",
+                        headers=make_auth_headers(token),
+                        timeout=10
+                    )
             if r.status_code == 200:
                 data = r.json()
                 if data.get('id'):
                     result[data['id']] = data.get('genres', [])
-            else:
-                logger.warning(f"Artist {aid} returned status {r.status_code}")
         except Exception as e:
             logger.error(f"Failed to fetch artist {aid}: {e}")
-        # Pace requests to avoid rate limits
-        if (i + 1) % 15 == 0:
+        # Pace requests
+        if (i + 1) % 10 == 0:
             time.sleep(1)
     logger.info(f"Fetched genres for {len(result)}/{len(artist_ids)} artists")
     return result
@@ -300,7 +318,10 @@ def classify_genre(raw):
         if k in low: return v
     return 'Other'
 
-def analyze_playlist_genres(token, playlist_id):
+def analyze_playlist_genres(token, playlist_id, user_id=None):
+    """Analyze genres in a playlist.
+    Uses cached genres from top artists first, fetches remaining individually.
+    """
     artist_ids = set()
     track_artists = []
     songs = fetch_playlist_items_direct(token, playlist_id)
@@ -309,10 +330,32 @@ def analyze_playlist_genres(token, playlist_id):
         aids = s.get('all_artist_ids', [])
         artist_ids.update(aids)
         track_artists.append((s['id'], aids))
-    logger.info(f"analyze_playlist_genres: {len(artist_ids)} unique artists to fetch")
+    logger.info(f"analyze_playlist_genres: {len(artist_ids)} unique artists")
+
     if not artist_ids:
         return {'main_genres': {}, 'sub_genres': {}, 'total_tracks': len(track_artists)}
-    ag = fetch_artist_genres_batch(token, list(artist_ids))
+
+    # Check which artists we already have cached from top artists
+    ag = {}
+    cached = artist_genre_index_cache.get(user_id, {}) if user_id else {}
+    already_known = {aid for aid in artist_ids if aid in cached}
+    need_fetch = artist_ids - already_known
+
+    for aid in already_known:
+        ag[aid] = cached[aid]
+
+    logger.info(f"analyze_playlist_genres: {len(already_known)} from cache, {len(need_fetch)} need fetching")
+
+    # Fetch unknown artists (with rate limit protection)
+    if need_fetch:
+        fetched = fetch_artist_genres_batch(token, list(need_fetch))
+        ag.update(fetched)
+        # Save to cache for next time
+        if user_id:
+            if user_id not in artist_genre_index_cache:
+                artist_genre_index_cache[user_id] = {}
+            artist_genre_index_cache[user_id].update(fetched)
+
     main_counts, sub_counts = Counter(), Counter()
     for _, aids in track_artists:
         for aid in aids:
@@ -322,7 +365,7 @@ def analyze_playlist_genres(token, playlist_id):
     grouped = defaultdict(list)
     for sg, c in sub_counts.most_common(60):
         grouped[classify_genre(sg)].append({'name': sg, 'count': c})
-    logger.info(f"analyze_playlist_genres: found {len(main_counts)} main genres")
+    logger.info(f"analyze_playlist_genres: {len(main_counts)} main genres found")
     return {'main_genres': dict(main_counts.most_common()), 'sub_genres': dict(grouped), 'total_tracks': len(track_artists)}
 
 def build_artist_genre_index(token, all_songs):
@@ -493,8 +536,9 @@ def analyze_playlist_route():
     pid = request.get_json().get('playlist_id')
     if not pid: return jsonify({'error': 'No playlist ID'}), 400
     token = get_access_token()
+    uid = session.get('spotify_user_id', '')
     try:
-        return jsonify(analyze_playlist_genres(token, pid))
+        return jsonify(analyze_playlist_genres(token, pid, user_id=uid))
     except Exception as e:
         logger.error(f"Analyze: {e}"); return jsonify({'error': str(e)}), 500
 
