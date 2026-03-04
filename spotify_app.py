@@ -204,7 +204,7 @@ def fetch_top_artists_direct(token):
         if data:
             for i, a in enumerate(data.get('items', [])):
                 if a.get('id') and a['id'] not in artists:
-                    artists[a['id']] = {'name': a['name'], 'genres': a.get('genres', []), 'rank': i}
+                    artists[a['id']] = {'id': a['id'], 'name': a['name'], 'genres': a.get('genres', []), 'rank': i}
     return list(artists.values())
 
 
@@ -231,8 +231,7 @@ def load_library_background(user_id, token):
     """
     Runs in a background thread. Fetches the entire library and
     stores results in the server-side caches.
-    Also builds the artist genre index during loading so it's ready
-    for genre analysis later.
+    Genre index is NOT built here — it's built on-demand when needed.
     """
     try:
         loading_state[user_id] = {'status': 'loading', 'message': 'Fetching liked songs...'}
@@ -249,18 +248,13 @@ def load_library_background(user_id, token):
         all_unique = deduplicate_songs(liked, pl_songs)
         summary = summarize_library(all_unique, pl_meta, top_a, top_t)
 
-        # Build artist genre index from top artists first (they already have genres)
-        # This gives us genre data without needing individual artist API calls
-        loading_state[user_id]['message'] = 'Building genre index...'
+        # Seed the genre index with top artists (they already have genres, no extra API calls)
         genre_index = {}
         for a in top_a:
-            # top_a items don't have IDs stored — we need to build index differently
-            pass
-
-        # Build genre index from top artists (we have their genres already)
-        # Then fill in missing artists with individual fetches
-        genre_index = build_artist_genre_index_smart(token, all_unique, top_a)
+            if a.get('id') and a.get('genres'):
+                genre_index[a['id']] = a['genres']
         artist_genre_index_cache[user_id] = genre_index
+        logger.info(f"Seeded genre index with {len(genre_index)} top artists")
 
         library_cache[user_id] = summary
         full_library_cache[user_id] = all_unique
@@ -271,7 +265,7 @@ def load_library_background(user_id, token):
             'total_songs': len(all_unique),
             'total_playlists': len(pl_meta),
         }
-        logger.info(f"Library loaded for {user_id}: {len(all_unique)} songs, {len(pl_meta)} playlists, {len(genre_index)} artists in genre index")
+        logger.info(f"Library loaded for {user_id}: {len(all_unique)} songs, {len(pl_meta)} playlists")
 
     except Exception as e:
         logger.error(f"Background load failed for {user_id}: {e}")
@@ -291,35 +285,6 @@ def fetch_artist_genres_batch(token, artist_ids):
         if (i + 1) % 20 == 0:
             time.sleep(0.5)
     return result
-
-
-def build_artist_genre_index_smart(token, all_songs, top_artists):
-    """Build artist->genres index using top artists first, then fetching unknowns.
-
-    Top artists already come with genre data from /me/top/artists, so we
-    use those to populate the index without extra API calls. Only artists
-    NOT in the top artists list need individual /artists/{id} fetches.
-    """
-    genre_index = {}
-
-    # Step 1: Index all top artists by fetching their IDs
-    # top_artists is a list of dicts with 'name' and 'genres' but no 'id'
-    # We need to fetch them to get IDs — but actually, let's fix this upstream
-    # by storing IDs in fetch_top_artists_direct
-
-    # For now, collect all unique artist IDs from songs
-    all_artist_ids = set()
-    for s in all_songs:
-        all_artist_ids.update(s.get('all_artist_ids', []))
-
-    logger.info(f"Genre index: {len(all_artist_ids)} unique artists to resolve")
-
-    # Fetch artists individually (with rate limiting built into api_get)
-    fetched = fetch_artist_genres_batch(token, list(all_artist_ids))
-    genre_index.update(fetched)
-
-    logger.info(f"Genre index built: {len(genre_index)} artists with genres")
-    return genre_index
 
 
 # ─── Genre Analysis ───
@@ -349,8 +314,8 @@ def classify_genre(raw):
 def analyze_playlist_genres(token, playlist_id, user_id=None):
     """Analyze genres in a playlist.
 
-    Uses the pre-built artist genre index from library loading if available.
-    Falls back to fetching artist genres individually if not.
+    Uses the pre-built artist genre index if available (seeded from top artists).
+    Fetches any missing artists individually.
     """
     artist_ids = set()
     track_artists = []
@@ -366,31 +331,29 @@ def analyze_playlist_genres(token, playlist_id, user_id=None):
     logger.info(f"Genre analysis: {len(songs)} tracks, {len(artist_ids)} unique artists")
 
     if not artist_ids:
-        logger.warning(f"No artist IDs found for playlist {playlist_id} — songs may have no artist data")
+        logger.warning(f"No artist IDs found for playlist {playlist_id}")
         return {'main_genres': {}, 'sub_genres': {}, 'total_tracks': len(track_artists)}
 
-    # Try to use cached genre index first (built during library loading)
+    # Use cached genre index if available, fetch missing artists
     ag = {}
-    if user_id and user_id in artist_genre_index_cache:
-        cached_index = artist_genre_index_cache[user_id]
-        # Use cached data for artists we already know
-        known = {aid for aid in artist_ids if aid in cached_index}
-        unknown = artist_ids - known
-        for aid in known:
-            ag[aid] = cached_index[aid]
-        logger.info(f"Genre cache hit: {len(known)} cached, {len(unknown)} need fetching")
-        # Fetch only unknown artists
-        if unknown:
-            fetched = fetch_artist_genres_batch(token, list(unknown))
-            ag.update(fetched)
-            # Also update the cache for future use
-            cached_index.update(fetched)
-    else:
-        # No cache available — fetch all individually
-        logger.info(f"No genre cache for user, fetching {len(artist_ids)} artists individually")
-        ag = fetch_artist_genres_batch(token, list(artist_ids))
+    cached_index = artist_genre_index_cache.get(user_id, {}) if user_id else {}
+    known = {aid for aid in artist_ids if aid in cached_index}
+    unknown = artist_ids - known
 
-    # Count how many artists actually returned genres
+    for aid in known:
+        ag[aid] = cached_index[aid]
+
+    logger.info(f"Genre cache: {len(known)} cached, {len(unknown)} need fetching")
+
+    if unknown:
+        fetched = fetch_artist_genres_batch(token, list(unknown))
+        ag.update(fetched)
+        # Update cache for future use
+        if user_id:
+            if user_id not in artist_genre_index_cache:
+                artist_genre_index_cache[user_id] = {}
+            artist_genre_index_cache[user_id].update(fetched)
+
     artists_with_genres = sum(1 for genres in ag.values() if genres)
     logger.info(f"Genre results: {artists_with_genres}/{len(ag)} artists have genre data")
 
