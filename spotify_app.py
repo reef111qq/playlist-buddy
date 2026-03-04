@@ -248,49 +248,50 @@ def load_library_background(user_id, token):
         loading_state[user_id] = {'status': 'error', 'message': str(e)}
 
 
-# ─── Artist Genre Fetching (batch REMOVED, fetch individually) ───
+# ─── Artist Genre Fetching (BATCH endpoint: GET /artists?ids=) ───
 
 def fetch_artist_genres_batch(token, artist_ids):
-    """Fetch genres for each artist individually.
-    - Caps rate-limit wait at 5 seconds (Spotify sometimes says wait 23 hours)
-    - Stops fetching if we get rate limited (returns what we have so far)
-    - Paces requests with small delays to avoid hitting limits
+    """Fetch genres using the batch endpoint: GET /artists?ids=id1,id2,...
+    Spotify allows up to 50 artist IDs per request, so 68 artists = 2 calls
+    instead of 68. Much less likely to trigger rate limits.
     """
     result = {}
-    rate_limited = False
-    for i, aid in enumerate(artist_ids):
-        if rate_limited:
-            break
+    ids_list = list(artist_ids)
+    for i in range(0, len(ids_list), 50):
+        batch = ids_list[i:i+50]
+        ids_param = ",".join(batch)
         try:
             r = http_requests.get(
-                f"{API_BASE}/artists/{aid}",
+                f"{API_BASE}/artists",
                 headers=make_auth_headers(token),
-                timeout=10
+                params={"ids": ids_param},
+                timeout=15
             )
             if r.status_code == 429:
                 retry_after = int(r.headers.get('Retry-After', 5))
-                if retry_after > 5:
-                    # Spotify wants us to wait too long — stop fetching
-                    logger.warning(f"Rate limited with Retry-After={retry_after}s, stopping artist fetches. Got {len(result)}/{len(artist_ids)} so far.")
-                    rate_limited = True
+                if retry_after > 10:
+                    logger.warning(f"Rate limited with Retry-After={retry_after}s on batch artist fetch. Got {len(result)}/{len(ids_list)} so far.")
                     break
-                else:
-                    time.sleep(retry_after)
-                    r = http_requests.get(
-                        f"{API_BASE}/artists/{aid}",
-                        headers=make_auth_headers(token),
-                        timeout=10
-                    )
+                time.sleep(retry_after)
+                r = http_requests.get(
+                    f"{API_BASE}/artists",
+                    headers=make_auth_headers(token),
+                    params={"ids": ids_param},
+                    timeout=15
+                )
             if r.status_code == 200:
                 data = r.json()
-                if data.get('id'):
-                    result[data['id']] = data.get('genres', [])
+                for artist in data.get('artists', []):
+                    if artist and artist.get('id'):
+                        result[artist['id']] = artist.get('genres', [])
+            else:
+                logger.error(f"Batch artist fetch returned {r.status_code}: {r.text[:200]}")
         except Exception as e:
-            logger.error(f"Failed to fetch artist {aid}: {e}")
-        # Pace requests
-        if (i + 1) % 10 == 0:
-            time.sleep(1)
-    logger.info(f"Fetched genres for {len(result)}/{len(artist_ids)} artists")
+            logger.error(f"Batch artist fetch failed: {e}")
+        # Small delay between batches to be polite
+        if i + 50 < len(ids_list):
+            time.sleep(0.5)
+    logger.info(f"Fetched genres for {len(result)}/{len(ids_list)} artists")
     return result
 
 
@@ -371,7 +372,7 @@ def analyze_playlist_genres(token, playlist_id, user_id=None):
 def build_artist_genre_index(token, all_songs):
     aids = set()
     for s in all_songs: aids.update(s.get('all_artist_ids', []))
-    logger.info(f"Genre index: fetching {len(aids)} artists individually")
+    logger.info(f"Genre index: fetching {len(aids)} artists in batches")
     return fetch_artist_genres_batch(token, list(aids))
 
 
